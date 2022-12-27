@@ -1,12 +1,13 @@
 import requests
 import json
+import utils
 
 configFile = open("./config.json")
 config = json.load(configFile)
 configFile.close()
 
 for station in config["stations"]:
-    print(f"\nStanica {station}: ")
+    print(f"\n\nStanica {station}: ")
 
     resp = requests.get(
         f"https://online.nsmart.rs/publicapi/v1/announcement/announcement.php?station_uid={station}",
@@ -16,8 +17,9 @@ for station in config["stations"]:
     if (resp[0]['just_coordinates'] != "1"):
 
         for line in resp:
-            secLeft = line['seconds_left']
-            print(f"Linija: {line['line_number']}\tMinuti do dolaska: {secLeft // 60}:{secLeft % 60 :02}")
+            print(f"\nLinija: {line['line_number']}")
+            print(f"Procenjeno vreme do dolaska: {utils.secondsToTimeString(line['seconds_left'])}")
+            print(f"Trenutna stanica autobusa: {line['vehicles'][0]['station_name']}")
 
     else:
         print("Nema dolazaka!")

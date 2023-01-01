@@ -4,13 +4,18 @@ import utils
 
 with open("./config.json") as f:
     config = json.load(f)
+try:
+    with open("./data/stations.json") as f:
+        stations = json.load(f)
+except:
+    stations = {}
 
 
 def checkStation(id):
     arrivals = []
 
     resp = requests.get(
-            f"https://online.nsmart.rs/publicapi/v1/announcement/announcement.php?station_uid={id}",
+            f"{config['stationEndpointURL']}{id}",
             headers={"X-Api-Authentication": config["apikey"], "User-Agent": "nsmarter"},
     ).json()
 
@@ -25,11 +30,11 @@ def checkStation(id):
     return arrivals
 
 def getArrivals():
-    for station in config["stations"]:
-        print(f"\n\nStanica {station}: ")
+    for id, station in stations.items():
+        print(f"\n\nStanica {station['name']}: ")
 
         try:
-            lines = checkStation(station)
+            lines = checkStation(id)
         except requests.exceptions.ConnectionError:
             print("Proverite internet konekciju!")
             return
@@ -44,31 +49,40 @@ def getArrivals():
 
 def searchStation(uuid):
     resp = requests.get(
-            f"https://online.nsmart.rs/publicapi/v1/networkextended.php?action=get_cities_extended",
+            config['allStationsEndpointURL'],
             headers={"X-Api-Authentication": config["apikey"], "User-Agent": "nsmarter"},
     ).json()
 
     for station in resp['stations']:
         if station['station_id'] == uuid:
-            return station['id']
+            st = dict()
+
+            st['name'] = station['name']
+            st['coords'] = station['coordinates']
+            st['sid'] = station['station_id']
+
+            return (station['id'], st)
 
 def addStation():
     uuid = input("Unesite ID stanice: ")
-    sid = searchStation(uuid)
+    id, station = searchStation(uuid)
 
-    if sid:
-        config["stations"].append(sid)
+    if id:
+        if stations.get(str(id)):
+            print("Tražena stanica je već sačuvana!")
+            return
+
+        stations[id] = station
+        with open("./data/stations.json", "w") as f:
+            json.dump(stations, f)
         
-        with open("./config.json", "w") as f:
-            json.dump(config, f)
-        
-        print("Stanica je dodata!")
+        print(f"Stanica {station['name']} je dodata!")
     else:
-        print("Trazena stanica nije nadjena!")
+        print("Tražena stanica nije nađena!")
 
 
 if __name__ == "__main__":
-    print("Dobrodosli u NSmarter!")
+    print("Dobrodošli u NSmarter!")
     
     while 1 < 2:
         print("\nUnesite 1 za proveru dolazaka autobusa.")

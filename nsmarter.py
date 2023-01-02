@@ -4,6 +4,8 @@ import questionary
 
 import utils
 from rich.console import Console
+from rich.table import Table
+from rich import box
 
 console = Console()
 
@@ -42,6 +44,7 @@ def checkStation(id):
                     "lastStation": arr["vehicles"][0]["station_name"],
                 }
             )
+    arrivals.reverse()
     return arrivals
 
 
@@ -58,12 +61,15 @@ def getArrivals(id):
         return
 
     if lines:
+        table = Table(box=box.ROUNDED, show_lines=True)
+        table.add_column("Linija", justify="center")
+        table.add_column("ETA", justify="center")
+        table.add_column("Trenutna stanica", justify="center")
+
         for arrival in lines:
-            console.print(f"\nLinija: {arrival['line']}")
-            console.print(
-                f"Procenjeno vreme do dolaska: {utils.secondsToTimeString(arrival['eta'])}"
-            )
-            console.print(f"Trenutna stanica autobusa: {arrival['lastStation']}")
+            table.add_row(arrival['line'], utils.secondsToTimeString(arrival['eta']), arrival['lastStation'])
+        console.print(table)
+
     else:
         console.print("Nema dolazaka!")
 

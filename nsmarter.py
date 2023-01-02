@@ -3,6 +3,9 @@ import json
 import questionary
 
 import utils
+from rich.console import Console
+
+console = Console()
 
 
 with open("./config.json") as f:
@@ -25,76 +28,96 @@ def checkStation(id):
     arrivals = []
 
     resp = requests.get(
-            f"{config['stationEndpointURL']}{id}",
-            headers={"X-Api-Authentication": config["apikey"], "User-Agent": "nsmarter"},
+        f"{config['stationEndpointURL']}{id}",
+        headers={"X-Api-Authentication": config["apikey"], "User-Agent": "nsmarter"},
     ).json()
 
-    if (resp[0]['just_coordinates'] != "1"):
+    if resp[0]["just_coordinates"] != "1":
 
         for arr in resp:
-            arrivals.append({
-                "line": arr['line_number'],
-                "eta": arr['seconds_left'],
-                "lastStation": arr['vehicles'][0]['station_name']
-            })
+            arrivals.append(
+                {
+                    "line": arr["line_number"],
+                    "eta": arr["seconds_left"],
+                    "lastStation": arr["vehicles"][0]["station_name"],
+                }
+            )
     return arrivals
 
+
 def getArrivals(id):
+    console.clear()
     station = stations[str(id)]
-    print(f"\n\nStanica {station['name']}: ")
+    console.rule(f"Stanica {station['name']}: ")
 
     try:
-        lines = checkStation(id)
+        with console.status("Provera dolazaka je u toku!"):
+            lines = checkStation(id)
     except requests.exceptions.ConnectionError:
-        print("Proverite internet konekciju!")
+        console.print("Proverite internet konekciju!")
         return
 
     if lines:
         for arrival in lines:
-            print(f"\nLinija: {arrival['line']}")
-            print(f"Procenjeno vreme do dolaska: {utils.secondsToTimeString(arrival['eta'])}")
-            print(f"Trenutna stanica autobusa: {arrival['lastStation']}")
+            console.print(f"\nLinija: {arrival['line']}")
+            console.print(
+                f"Procenjeno vreme do dolaska: {utils.secondsToTimeString(arrival['eta'])}"
+            )
+            console.print(f"Trenutna stanica autobusa: {arrival['lastStation']}")
     else:
-        print("Nema dolazaka!")
+        console.print("Nema dolazaka!")
+
+    utils.emptyInput()
+
 
 def searchStation(uuid):
     resp = requests.get(
-            config['allStationsEndpointURL'],
-            headers={"X-Api-Authentication": config["apikey"], "User-Agent": "nsmarter"},
+        config["allStationsEndpointURL"],
+        headers={
+            "X-Api-Authentication": config["apikey"],
+            "User-Agent": "nsmarter",
+        },
     ).json()
 
-    for station in resp['stations']:
-        if station['station_id'] == uuid:
+    for station in resp["stations"]:
+        if station["station_id"] == uuid:
             st = dict()
 
-            st['name'] = station['name']
-            st['coords'] = station['coordinates']
-            st['sid'] = station['station_id']
+            st["name"] = station["name"]
+            st["coords"] = station["coordinates"]
+            st["sid"] = station["station_id"]
 
-            return (station['id'], st)
+            return (station["id"], st)
+
 
 def addStation(uuid):
     try:
-        id, station = searchStation(uuid)
+        with console.status("Pretraga stanica u toku!"):
+            id, station = searchStation(uuid)
     except TypeError:
-        print("Tražena stanica nije nađena!")
+        console.print("Tražena stanica nije nađena!")
+        utils.emptyInput()
         return
 
-    
     if stations.get(str(id)):
-        print("Tražena stanica je već sačuvana!")
+        console.print("Tražena stanica je već sačuvana!")
         return
     stations[str(id)] = station
 
     with open("./data/stations.json", "w") as f:
         json.dump(stations, f)
+
+    console.print(f"Stanica {station['name']} je dodata!")
     
-    print(f"Stanica {station['name']} je dodata!")
 
 
 def printStations():
-    print("\n")
-    stList = [stations[str(i)]['name'] for i in stations] + ["Unos nove stanice"]
+    console.clear()
+    console.rule("NSmarter")
+    stList = [stations[str(i)]["name"] for i in stations] + [
+        "Unos nove stanice",
+        "Izlaz",
+    ]
 
     choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
 
@@ -103,14 +126,15 @@ def printStations():
         addStation(uuid)
         return
 
+    elif choice == "Izlaz":
+        console.clear()
+        console.print("Hvala što ste koristili NSmarter!")
+        exit()
+
     id = list(stations.keys())[stList.index(choice)]
-    
     getArrivals(id)
 
 
-
 if __name__ == "__main__":
-    print("Dobrodošli u NSmarter!")
-    
     while 1 < 2:
         printStations()

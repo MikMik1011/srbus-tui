@@ -1,14 +1,24 @@
 import requests
 import json
+import questionary
+
 import utils
+
 
 with open("./config.json") as f:
     config = json.load(f)
+
 try:
     with open("./data/stations.json") as f:
         stations = json.load(f)
 except:
     stations = {}
+
+try:
+    with open("./data/presets.json") as f:
+        presets = json.load(f)
+except:
+    presets = {}
 
 
 def checkStation(id):
@@ -84,20 +94,18 @@ def addStation(uuid):
 
 def printStations():
     print("\n")
-    for index, id in enumerate(stations):
-        print(f"{index} : {stations[id]['name']}")
+    stList = [stations[str(i)]['name'] for i in stations] + ["Unos nove stanice"]
 
-    choice = input("Unesite broj ispred stanice ili ID stanice: ")
+    choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
 
-    try:
-        choice = int(list(stations.keys())[int(choice)])
-    except:
-        pass
+    if choice == "Unos nove stanice":
+        uuid = questionary.text("Unesite ID stanice: ").ask()
+        addStation(uuid)
+        return
 
-    if type(choice) == int:
-        getArrivals(choice)
-    else:
-        addStation(choice)
+    id = list(stations.keys())[stList.index(choice)]
+    
+    getArrivals(id)
 
 
 

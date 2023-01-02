@@ -29,23 +29,23 @@ def checkStation(id):
             })
     return arrivals
 
-def getArrivals():
-    for id, station in stations.items():
-        print(f"\n\nStanica {station['name']}: ")
+def getArrivals(id):
+    station = stations[str(id)]
+    print(f"\n\nStanica {station['name']}: ")
 
-        try:
-            lines = checkStation(id)
-        except requests.exceptions.ConnectionError:
-            print("Proverite internet konekciju!")
-            return
+    try:
+        lines = checkStation(id)
+    except requests.exceptions.ConnectionError:
+        print("Proverite internet konekciju!")
+        return
 
-        if lines:
-            for arrival in lines:
-                print(f"\nLinija: {arrival['line']}")
-                print(f"Procenjeno vreme do dolaska: {utils.secondsToTimeString(arrival['eta'])}")
-                print(f"Trenutna stanica autobusa: {arrival['lastStation']}")
-        else:
-            print("Nema dolazaka!")
+    if lines:
+        for arrival in lines:
+            print(f"\nLinija: {arrival['line']}")
+            print(f"Procenjeno vreme do dolaska: {utils.secondsToTimeString(arrival['eta'])}")
+            print(f"Trenutna stanica autobusa: {arrival['lastStation']}")
+    else:
+        print("Nema dolazaka!")
 
 def searchStation(uuid):
     resp = requests.get(
@@ -63,34 +63,46 @@ def searchStation(uuid):
 
             return (station['id'], st)
 
-def addStation():
-    uuid = input("Unesite ID stanice: ")
-    id, station = searchStation(uuid)
-
-    if id:
-        if stations.get(str(id)):
-            print("Tražena stanica je već sačuvana!")
-            return
-
-        stations[id] = station
-        with open("./data/stations.json", "w") as f:
-            json.dump(stations, f)
-        
-        print(f"Stanica {station['name']} je dodata!")
-    else:
+def addStation(uuid):
+    try:
+        id, station = searchStation(uuid)
+    except TypeError:
         print("Tražena stanica nije nađena!")
+        return
+
+    
+    if stations.get(str(id)):
+        print("Tražena stanica je već sačuvana!")
+        return
+    stations[str(id)] = station
+
+    with open("./data/stations.json", "w") as f:
+        json.dump(stations, f)
+    
+    print(f"Stanica {station['name']} je dodata!")
+
+
+def printStations():
+    print("\n")
+    for index, id in enumerate(stations):
+        print(f"{index} : {stations[id]['name']}")
+
+    choice = input("Unesite broj ispred stanice ili ID stanice: ")
+
+    try:
+        choice = int(list(stations.keys())[int(choice)])
+    except:
+        pass
+
+    if type(choice) == int:
+        getArrivals(choice)
+    else:
+        addStation(choice)
+
 
 
 if __name__ == "__main__":
     print("Dobrodošli u NSmarter!")
     
     while 1 < 2:
-        print("\nUnesite 1 za proveru dolazaka autobusa.")
-        print("Unesite 2 za dodavanje nove stanice.")
-
-        choice = input("Izbor: ")
-
-        if choice == "1":
-            getArrivals()
-        if choice == "2":
-            addStation()
+        printStations()

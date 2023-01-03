@@ -54,7 +54,7 @@ def checkStation(id):
 
 def getArrivals(id):
     station = stations[str(id)]
-    console.rule(f"Stanica {station['name']}: ")
+    console.rule(f"Stanica {station['name']} ({station['sid']}):")
 
     try:
         with console.status("Provera dolazaka je u toku!"):
@@ -110,25 +110,29 @@ def addStation(uuid):
         with console.status("Pretraga stanica u toku!"):
             id, station = searchStation(uuid)
     except TypeError:
-        console.print("Tražena stanica nije nađena!")
+        console.print("[bold red]Tražena stanica nije nađena!")
         utils.emptyInput()
         return
 
     if stations.get(str(id)):
-        console.print("Tražena stanica je već sačuvana!")
+        console.print("[bold red]Tražena stanica je već sačuvana!")
+        utils.emptyInput()
         return
     stations[str(id)] = station
 
     with open("./data/stations.json", "w") as f:
         json.dump(stations, f)
 
-    console.print(f"Stanica {station['name']} je dodata!")
+    console.print(f"Stanica {station['name']} [green] je sačuvana!")
+    utils.emptyInput()
 
 
 def printStations():
     console.clear()
     console.rule("Stanice")
-    stList = [stations[str(i)]["name"] for i in stations] + [
+    stList = [
+        f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+    ] + [
         "Unos nove stanice",
         "Izlaz",
     ]
@@ -160,7 +164,9 @@ def printPresets():
 
     if choice == "Napravi novi preset":
         name = questionary.text("Unesite ime preseta: ").ask()
-        stList = [stations[str(i)]["name"] for i in stations]
+        stList = [
+            f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+        ]
 
         stNames = questionary.checkbox("Izaberite stanice:", choices=stList).ask()
         stIDs = [list(stations.keys())[stList.index(i)] for i in stNames]
@@ -169,6 +175,8 @@ def printPresets():
         with open("./data/presets.json", "w") as f:
             json.dump(presets, f)
 
+        console.print(f"Preset {name} [green]je sačuvan!")
+        utils.emptyInput()
         return
 
     elif choice == "Izlaz":
@@ -183,6 +191,7 @@ def printPresets():
 
 
 if __name__ == "__main__":
+    console.clear()
     while 1 < 2:
         console.rule("NSmarter")
         choice = questionary.select(

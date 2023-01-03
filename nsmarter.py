@@ -43,6 +43,7 @@ def checkStation(id):
                     "eta": arr["seconds_left"],
                     "busID": arr["vehicles"][0]["garageNo"],
                     "lastStation": arr["vehicles"][0]["station_name"],
+                    "stationDiff": utils.stationDifference(arr['all_stations'], id, arr["vehicles"][0]["station_number"])
                 }
             )
     arrivals.reverse()
@@ -64,11 +65,12 @@ def getArrivals(id):
         table = Table(box=box.ROUNDED, show_lines=True)
         table.add_column("Linija", justify="center")
         table.add_column("ETA", justify="center")
+        table.add_column("Br. stanica", justify="center")
         table.add_column("Trenutna stanica", justify="center")
         table.add_column("ID busa", justify="center")
 
         for arrival in lines:
-            table.add_row(arrival['line'], utils.secondsToTimeString(arrival['eta']), arrival['lastStation'], arrival['busID'])
+            table.add_row(arrival['line'], utils.secondsToTimeString(arrival['eta']), arrival['stationDiff'], arrival['lastStation'], arrival['busID'])
         console.print(table)
 
     else:

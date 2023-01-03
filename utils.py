@@ -3,3 +3,6 @@ def secondsToTimeString(sec):
 
 def emptyInput():
     input("\nPritisnite Enter da biste nastavili!")
+
+def stationDifference(allStations, goalStation, currIndex):
+    return str(abs([str(i['id']) for i in allStations].index(goalStation) + 1 - int(currIndex)))

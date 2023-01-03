@@ -41,6 +41,7 @@ def checkStation(id):
                 {
                     "line": arr["line_number"],
                     "eta": arr["seconds_left"],
+                    "busID": arr["vehicles"][0]["garageNo"],
                     "lastStation": arr["vehicles"][0]["station_name"],
                 }
             )
@@ -49,7 +50,6 @@ def checkStation(id):
 
 
 def getArrivals(id):
-    console.clear()
     station = stations[str(id)]
     console.rule(f"Stanica {station['name']}: ")
 
@@ -65,15 +65,15 @@ def getArrivals(id):
         table.add_column("Linija", justify="center")
         table.add_column("ETA", justify="center")
         table.add_column("Trenutna stanica", justify="center")
+        table.add_column("ID busa", justify="center")
 
         for arrival in lines:
-            table.add_row(arrival['line'], utils.secondsToTimeString(arrival['eta']), arrival['lastStation'])
+            table.add_row(arrival['line'], utils.secondsToTimeString(arrival['eta']), arrival['lastStation'], arrival['busID'])
         console.print(table)
 
     else:
         console.print("Nema dolazaka!")
 
-    utils.emptyInput()
 
 
 def searchStation(uuid):
@@ -138,7 +138,9 @@ def printStations():
         exit()
 
     id = list(stations.keys())[stList.index(choice)]
+    console.clear()
     getArrivals(id)
+    utils.emptyInput()
 
 
 if __name__ == "__main__":

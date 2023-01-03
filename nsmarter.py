@@ -43,7 +43,9 @@ def checkStation(id):
                     "eta": arr["seconds_left"],
                     "busID": arr["vehicles"][0]["garageNo"],
                     "lastStation": arr["vehicles"][0]["station_name"],
-                    "stationDiff": utils.stationDifference(arr['all_stations'], id, arr["vehicles"][0]["station_number"])
+                    "stationDiff": utils.stationDifference(
+                        arr["all_stations"], id, arr["vehicles"][0]["station_number"]
+                    ),
                 }
             )
     arrivals.reverse()
@@ -70,12 +72,17 @@ def getArrivals(id):
         table.add_column("ID busa", justify="center")
 
         for arrival in lines:
-            table.add_row(arrival['line'], utils.secondsToTimeString(arrival['eta']), arrival['stationDiff'], arrival['lastStation'], arrival['busID'])
+            table.add_row(
+                arrival["line"],
+                utils.secondsToTimeString(arrival["eta"]),
+                arrival["stationDiff"],
+                arrival["lastStation"],
+                arrival["busID"],
+            )
         console.print(table)
 
     else:
         console.print("Nema dolazaka!")
-
 
 
 def searchStation(uuid):
@@ -116,12 +123,11 @@ def addStation(uuid):
         json.dump(stations, f)
 
     console.print(f"Stanica {station['name']} je dodata!")
-    
 
 
 def printStations():
     console.clear()
-    console.rule("NSmarter")
+    console.rule("Stanice")
     stList = [stations[str(i)]["name"] for i in stations] + [
         "Unos nove stanice",
         "Izlaz",
@@ -135,16 +141,63 @@ def printStations():
         return
 
     elif choice == "Izlaz":
-        console.clear()
-        console.print("Hvala što ste koristili NSmarter!")
-        exit()
+        return
 
     id = list(stations.keys())[stList.index(choice)]
     console.clear()
     getArrivals(id)
+
+    utils.emptyInput()
+
+
+def printPresets():
+    console.clear()
+    console.rule("Preseti")
+
+    prList = [i for i in presets.keys()] + ["Napravi novi preset", "Izlaz"]
+
+    choice = questionary.select("Izaberite preset:", choices=prList).ask()
+
+    if choice == "Napravi novi preset":
+        name = questionary.text("Unesite ime preseta: ").ask()
+        stList = [stations[str(i)]["name"] for i in stations]
+
+        stNames = questionary.checkbox("Izaberite stanice:", choices=stList).ask()
+        stIDs = [list(stations.keys())[stList.index(i)] for i in stNames]
+        presets[name] = stIDs
+
+        with open("./data/presets.json", "w") as f:
+            json.dump(presets, f)
+
+        return
+
+    elif choice == "Izlaz":
+        return
+
+    console.clear()
+    console.rule(choice)
+    for station in presets[choice]:
+        getArrivals(station)
+
     utils.emptyInput()
 
 
 if __name__ == "__main__":
     while 1 < 2:
-        printStations()
+        console.rule("NSmarter")
+        choice = questionary.select(
+            "Izaberite opciju:", choices=["Izbor stanica", "Izbor preseta", "Izlaz"]
+        ).ask()
+
+        if choice == "Izbor stanica":
+            printStations()
+            console.clear()
+
+        elif choice == "Izbor preseta":
+            printPresets()
+            console.clear()
+
+        elif choice == "Izlaz":
+            console.clear()
+            console.print("Hvala što ste koristili NSmarter!")
+            exit()

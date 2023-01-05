@@ -1,14 +1,15 @@
 import requests
 import json
-import questionary
+from datetime import date 
 
-import utils
+import questionary
 from rich.console import Console
 from rich.table import Table
 from rich import box
 
 console = Console()
 
+import utils
 
 with open("./config.json") as f:
     config = json.load(f)
@@ -24,6 +25,13 @@ try:
         presets = json.load(f)
 except:
     presets = {}
+
+if config['stats']:
+    try:
+        with open("./data/stats.json") as f:
+            stats = json.load(f)
+    except:
+        stats = {}
 
 
 def checkStation(id):
@@ -53,7 +61,8 @@ def checkStation(id):
 
 
 def getArrivals(id):
-    station = stations[str(id)]
+    id = str(id)
+    station = stations[id]
     console.rule(f"Stanica {station['name']} ({station['sid']}):")
 
     try:
@@ -62,6 +71,23 @@ def getArrivals(id):
     except requests.exceptions.ConnectionError:
         console.print("Proverite internet konekciju!")
         return
+
+    if config['stats']:
+        
+        if not stats.get(id):
+            stats[id] = {}
+        
+        today = date.today().strftime("%Y-%m-%d")
+
+        if not stats[id].get(today):
+            stats[id][today] = 0
+
+        stats[id][today] += 1
+
+        with open("./data/stats.json", "w") as f:
+            json.dump(stats, f)
+
+
 
     if lines:
         table = Table(box=box.ROUNDED, show_lines=True)

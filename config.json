@@ -1,5 +1,6 @@
 {
     "allStationsEndpointURL": "https://online.nsmart.rs/publicapi/v1/networkextended.php?action=get_cities_extended",
     "stationEndpointURL": "https://online.nsmart.rs/publicapi/v1/announcement/announcement.php?station_uid=",
-    "apikey": "4670f468049bbee2260"
+    "apikey": "4670f468049bbee2260",
+    "stats": true
 }

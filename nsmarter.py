@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 from datetime import date 
@@ -14,6 +15,8 @@ import utils
 with open("./config.json") as f:
     config = json.load(f)
 
+if not os.path.exists("./data"):
+    os.makedirs("./data")
 try:
     with open("./data/stations.json") as f:
         stations = json.load(f)

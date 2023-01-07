@@ -27,6 +27,7 @@ except:
     presets = {}
 
 if config['stats']:
+    import matplotlib.pyplot as plt
     try:
         with open("./data/stats.json") as f:
             stats = json.load(f)
@@ -215,13 +216,50 @@ def printPresets():
 
     utils.emptyInput()
 
+def showStats(id):
+    st = stats.get(id)
+    if not st:
+        console.print("[bold red]Nema podataka o ovoj stanici!")
+        return
+
+    plt.bar(list(st.keys()), list(st.values()))
+    plt.xlabel("Datumi")
+    plt.ylabel("Broj pretraga")
+    with console.status("Otvaranje prozora sa grafikonom"):
+        plt.show()
+
+def seeStats():
+    console.clear()
+    console.rule("Statistika")
+    stList = [
+        f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+    ] + [
+        "Izlaz",
+    ]
+
+    choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+
+    if choice == "Izlaz":
+        return
+
+    id = str(list(stations.keys())[stList.index(choice)])
+    console.clear()
+    showStats(id)
+
+    utils.emptyInput()
+
+
 
 if __name__ == "__main__":
     console.clear()
+    choices=["Izbor stanica", "Izbor preseta", "Izlaz"]
+    if config['stats']:
+        choices.insert(2, "Pregled statistike")
     while 1 < 2:
         console.rule("NSmarter")
+
         choice = questionary.select(
-            "Izaberite opciju:", choices=["Izbor stanica", "Izbor preseta", "Izlaz"]
+            "Izaberite opciju:", choices
         ).ask()
 
         if choice == "Izbor stanica":
@@ -230,6 +268,10 @@ if __name__ == "__main__":
 
         elif choice == "Izbor preseta":
             printPresets()
+            console.clear()
+
+        elif choice == "Pregled statistike":
+            seeStats()
             console.clear()
 
         elif choice == "Izlaz":

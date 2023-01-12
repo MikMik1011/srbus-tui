@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from datetime import date 
+from datetime import date
 
 import questionary
 from rich.console import Console
@@ -29,8 +29,9 @@ try:
 except:
     presets = {}
 
-if config['stats']:
+if config["stats"]:
     import matplotlib.pyplot as plt
+
     try:
         with open("./data/stats.json") as f:
             stats = json.load(f)
@@ -49,15 +50,19 @@ def checkStation(id):
     if resp[0]["just_coordinates"] != "1":
 
         for arr in resp:
+            diff = utils.stationDifference(
+                arr["all_stations"], id, arr["vehicles"][0]["station_number"]
+            )
+            if diff < 0:
+                continue
+
             arrivals.append(
                 {
                     "line": arr["line_number"],
                     "eta": arr["seconds_left"],
                     "busID": arr["vehicles"][0]["garageNo"],
                     "lastStation": arr["vehicles"][0]["station_name"],
-                    "stationDiff": utils.stationDifference(
-                        arr["all_stations"], id, arr["vehicles"][0]["station_number"]
-                    ),
+                    "stationDiff": str(diff),
                 }
             )
     arrivals.reverse()
@@ -76,11 +81,11 @@ def getArrivals(id):
         console.print("Proverite internet konekciju!")
         return
 
-    if config['stats']:
-        
+    if config["stats"]:
+
         if not stats.get(id):
             stats[id] = {}
-        
+
         today = date.today().strftime("%Y-%m-%d")
 
         if not stats[id].get(today):
@@ -90,8 +95,6 @@ def getArrivals(id):
 
         with open("./data/stats.json", "w") as f:
             json.dump(stats, f)
-
-
 
     if lines:
         table = Table(box=box.ROUNDED, show_lines=True)
@@ -219,6 +222,7 @@ def printPresets():
 
     utils.emptyInput()
 
+
 def showStats(id):
     st = stats.get(id)
     if not st:
@@ -230,6 +234,7 @@ def showStats(id):
     plt.ylabel("Broj pretraga")
     with console.status("Otvaranje prozora sa grafikonom"):
         plt.show()
+
 
 def seeStats():
     console.clear()
@@ -252,18 +257,15 @@ def seeStats():
     utils.emptyInput()
 
 
-
 if __name__ == "__main__":
     console.clear()
-    choices=["Izbor stanica", "Izbor preseta", "Izlaz"]
-    if config['stats']:
+    choices = ["Izbor stanica", "Izbor preseta", "Izlaz"]
+    if config["stats"]:
         choices.insert(2, "Pregled statistike")
     while 1 < 2:
         console.rule("NSmarter")
 
-        choice = questionary.select(
-            "Izaberite opciju:", choices
-        ).ask()
+        choice = questionary.select("Izaberite opciju:", choices).ask()
 
         if choice == "Izbor stanica":
             printStations()

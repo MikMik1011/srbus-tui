@@ -12,30 +12,38 @@ console = Console()
 
 import utils
 
-with open("./config.json") as f:
+scriptDir = os.path.dirname(os.path.abspath(__file__))
+configPath = os.path.join(scriptDir, 'config.json')
+dataDir = os.path.join(scriptDir, 'data')
+stationsPath = os.path.join(dataDir, 'stations.json')
+presetsPath = os.path.join(dataDir, 'presets.json')
+statsPath = os.path.join(dataDir, 'stats.json')
+
+with open(configPath) as f:
     config = json.load(f)
 
-if not os.path.exists("./data"):
-    os.makedirs("./data")
-try:
-    with open("./data/stations.json") as f:
+if not os.path.exists(dataDir):
+    os.makedirs(dataDir)
+
+if os.path.exists(stationsPath):
+    with open(stationsPath) as f:
         stations = json.load(f)
-except:
+else:
     stations = {}
 
-try:
-    with open("./data/presets.json") as f:
+if os.path.exists(presetsPath):
+    with open(presetsPath) as f:
         presets = json.load(f)
-except:
+else:
     presets = {}
 
 if config["stats"]:
     import matplotlib.pyplot as plt
 
-    try:
-        with open("./data/stats.json") as f:
+    if os.path.exists(statsPath):
+        with open(statsPath) as f:
             stats = json.load(f)
-    except:
+    else:
         stats = {}
 
 
@@ -93,7 +101,7 @@ def getArrivals(id):
 
         stats[id][today] += 1
 
-        with open("./data/stats.json", "w") as f:
+        with open(statsPath, "w") as f:
             json.dump(stats, f)
 
     if lines:
@@ -153,7 +161,7 @@ def addStation(uuid):
         return
     stations[str(id)] = station
 
-    with open("./data/stations.json", "w") as f:
+    with open(stationsPath, "w") as f:
         json.dump(stations, f)
 
     console.print(f"Stanica {station['name']} [green] je sačuvana!")
@@ -205,7 +213,7 @@ def printPresets():
         stIDs = [list(stations.keys())[stList.index(i)] for i in stNames]
         presets[name] = stIDs
 
-        with open("./data/presets.json", "w") as f:
+        with open(presetsPath, "w") as f:
             json.dump(presets, f)
 
         console.print(f"Preset {name} [green]je sačuvan!")

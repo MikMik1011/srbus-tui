@@ -34,11 +34,20 @@ if os.path.exists(stationsPath):
 else:
     stations = {}
 
+def saveStations():
+    with open(stationsPath, "w") as f:
+        json.dump(stations, f)
+
+
 if os.path.exists(presetsPath):
     with open(presetsPath) as f:
         presets = json.load(f)
 else:
     presets = {}
+
+def savePresets():
+    with open(presetsPath, "w") as f:
+            json.dump(presets, f)
 
 if config["useStats"] and not config["useTermux"]:
     import matplotlib.pyplot as plt
@@ -48,6 +57,10 @@ if config["useStats"] and not config["useTermux"]:
             stats = json.load(f)
     else:
         stats = {}
+
+def saveStats():
+    with open(statsPath, "w") as f:
+            json.dump(stats, f)
 
 if not config["useTermux"]:
     from notifypy import Notify
@@ -165,8 +178,7 @@ def getArrivals(id):
 
         stats[id][today] += 1
 
-        with open(statsPath, "w") as f:
-            json.dump(stats, f)
+        saveStats()
 
     if lines:
         table = Table(box=box.ROUNDED, show_lines=True)
@@ -255,14 +267,13 @@ def addStation(uuid):
         return
     stations[str(id)] = station
 
-    with open(stationsPath, "w") as f:
-        json.dump(stations, f)
+    saveStations()
 
     console.print(f"Stanica {station['name']} [green] je sačuvana!")
     utils.emptyInput()
 
 
-def printStations():
+def stationsMenu():
     console.clear()
     console.rule("Stanice")
     stList = [
@@ -283,13 +294,27 @@ def printStations():
         return
 
     id = list(stations.keys())[stList.index(choice)]
+
+    action = questionary.select("Šta želite da uradite?", choices=[
+        "Proveri dolaske",
+        "Izbriši stanicu",
+        "Izlaz"
+    ]).ask()
+    
     console.clear()
-    getArrivals(id)
+    if action == "Proveri dolaske":
+        getArrivals(id)
+    elif action == "Izbriši stanicu":
+        del stations[id]
+        saveStations()
+        console.print(f"[bold green]Stanica {choice} uspešno obrisana!")
+    else:
+        return
 
     utils.emptyInput()
 
 
-def printPresets():
+def presetsMenu():
     console.clear()
     console.rule("Preseti")
 
@@ -307,8 +332,7 @@ def printPresets():
         stIDs = [list(stations.keys())[stList.index(i)] for i in stNames]
         presets[name] = stIDs
 
-        with open(presetsPath, "w") as f:
-            json.dump(presets, f)
+        savePresets()
 
         console.print(f"Preset {name} [green]je sačuvan!")
         utils.emptyInput()
@@ -317,10 +341,34 @@ def printPresets():
     elif choice == "Izlaz":
         return
 
+    action = questionary.select("Šta želite da uradite?", choices=[
+        "Proveri dolaske",
+        "Izbriši preset",
+        "Preimenjuj preset",
+        "Izlaz"
+    ]).ask()
+    
     console.clear()
-    console.rule(choice)
-    for station in presets[choice]:
-        getArrivals(station)
+    if action == "Proveri dolaske":
+        console.rule(choice)
+        for station in presets[choice]:
+            getArrivals(station)
+
+    elif action == "Izbriši preset":
+        del presets[choice]
+        savePresets()
+        console.print(f"[bold green]Preset {choice} uspešno obrisan!")
+
+    elif action == "Preimenjuj preset":
+        newName = questionary.text("Unesite novo ime preseta:").ask()
+        presets[newName] = presets[choice]
+        del presets[choice]
+        savePresets()
+        console.print(f"[bold green]Preset {choice} uspešno preimenovan u {newName}!")
+
+    else:
+        return
+    
 
     utils.emptyInput()
 
@@ -338,7 +386,7 @@ def showStats(id):
         plt.show()
 
 
-def seeStats():
+def statsMenu():
     console.clear()
     console.rule("Statistika")
     stList = [
@@ -371,15 +419,15 @@ if __name__ == "__main__":
         choice = questionary.select("Izaberite opciju:", choices).ask()
 
         if choice == "Izbor stanica":
-            printStations()
+            stationsMenu()
             console.clear()
 
         elif choice == "Izbor preseta":
-            printPresets()
+            presetsMenu()
             console.clear()
 
         elif choice == "Pregled statistike":
-            seeStats()
+            statsMenu()
             console.clear()
 
         elif choice == "Izlaz":

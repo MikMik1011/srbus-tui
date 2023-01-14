@@ -55,7 +55,7 @@ else:
     from termux import Notification as tNotify
 
 
-def sendNotification(text):
+def sendNotification(text, nid=None):
     if not config["useTermux"]:
         notification = Notify()
         notification.title = "NSmarter"
@@ -66,7 +66,7 @@ def sendNotification(text):
         tNotify.notify(
             title="NSmarter",
             content=text,
-            nid=text,
+            nid=nid or text,
             kwargs={
                 "group": "nsmarter",
                 "led-color": config["termuxNotifyLedClr"],
@@ -106,7 +106,7 @@ def checkStation(id):
     return arrivals
 
 
-def notifyArrival(stId, busID, statDist=config["stationsDistanceToNotify"]):
+def notifyArrival(stId, busID, statDist):
 
     statDist = int(statDist)
     dist = None
@@ -135,7 +135,10 @@ def notifyArrival(stId, busID, statDist=config["stationsDistanceToNotify"]):
 
             sleep(10)
 
-    sendNotification(f"Autobus {busID} na liniji {lineNo} je udaljen {dist} stanica!")
+    sendNotification(
+        f"Autobus {busID} na liniji {lineNo} je udaljen {dist} stanica!",
+        f"nsmarter-{lineNo}",
+    )
 
 
 def getArrivals(id):
@@ -196,11 +199,19 @@ def getArrivals(id):
                 "Izaberite dolaske koje želite da pratite", choices=choices
             ).ask()
 
+            distToNotify = questionary.text(
+                f"Unesite udaljenost stanica kada želite biti obavešteni (podrazumevano {config['stationsDistanceToNotify']}):"
+            ).ask()
+            if distToNotify:
+                distToNotify = int(distToNotify)
+            else:
+                distToNotify = int(config["stationsDistanceToNotify"])
+
             for arrival in arrToCheck:
                 busID = lines[choices.index(arrival)]["busID"]
                 threading.Thread(
                     target=notifyArrival,
-                    args=(id, busID),
+                    args=(id, busID, distToNotify),
                     name=f"nsmarter-notify:{busID}",
                     daemon=True,
                 ).start()

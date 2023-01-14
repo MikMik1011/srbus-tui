@@ -13,11 +13,11 @@ console = Console()
 import utils
 
 scriptDir = os.path.dirname(os.path.abspath(__file__))
-configPath = os.path.join(scriptDir, 'config.json')
-dataDir = os.path.join(scriptDir, 'data')
-stationsPath = os.path.join(dataDir, 'stations.json')
-presetsPath = os.path.join(dataDir, 'presets.json')
-statsPath = os.path.join(dataDir, 'stats.json')
+configPath = os.path.join(scriptDir, "config.json")
+dataDir = os.path.join(scriptDir, "data")
+stationsPath = os.path.join(dataDir, "stations.json")
+presetsPath = os.path.join(dataDir, "presets.json")
+statsPath = os.path.join(dataDir, "stats.json")
 
 with open(configPath) as f:
     config = json.load(f)
@@ -37,7 +37,7 @@ if os.path.exists(presetsPath):
 else:
     presets = {}
 
-if config["stats"]:
+if config["useStats"] and not config["useTermux"]:
     import matplotlib.pyplot as plt
 
     if os.path.exists(statsPath):
@@ -89,7 +89,7 @@ def getArrivals(id):
         console.print("Proverite internet konekciju!")
         return
 
-    if config["stats"]:
+    if config["useStats"] and not config["useTermux"]:
 
         if not stats.get(id):
             stats[id] = {}
@@ -268,7 +268,7 @@ def seeStats():
 if __name__ == "__main__":
     console.clear()
     choices = ["Izbor stanica", "Izbor preseta", "Izlaz"]
-    if config["stats"]:
+    if config["useStats"] and not config["useTermux"]:
         choices.insert(2, "Pregled statistike")
     while 1 < 2:
         console.rule("NSmarter")

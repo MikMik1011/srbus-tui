@@ -2,6 +2,8 @@ import os
 import requests
 import json
 from datetime import date
+import threading
+from time import sleep
 
 import questionary
 from rich.console import Console
@@ -11,6 +13,7 @@ from rich import box
 console = Console()
 
 import utils
+
 
 scriptDir = os.path.dirname(os.path.abspath(__file__))
 configPath = os.path.join(scriptDir, "config.json")
@@ -46,6 +49,32 @@ if config["useStats"] and not config["useTermux"]:
     else:
         stats = {}
 
+if not config["useTermux"]:
+    from notifypy import Notify
+else:
+    from termux import Notification as tNotify
+
+
+def sendNotification(text):
+    if not config["useTermux"]:
+        notification = Notify()
+        notification.title = "NSmarter"
+        notification.message = text
+        notification.send()
+
+    else:
+        tNotify.notify(
+            title="NSmarter",
+            content=text,
+            nid=text,
+            kwargs={
+                "group": "nsmarter",
+                "led-color": config["termuxNotifyLedClr"],
+                "vibrate": config["termuxNotifyVibPattern"],
+                "priority": "max",
+            },
+        )
+
 
 def checkStation(id):
     arrivals = []
@@ -75,6 +104,38 @@ def checkStation(id):
             )
     arrivals.reverse()
     return arrivals
+
+
+def notifyArrival(stId, busID, statDist=config["stationsDistanceToNotify"]):
+
+    statDist = int(statDist)
+    dist = None
+    lineNo = None
+
+    while dist == None or dist > statDist:
+
+        try:
+            lines = checkStation(stId)
+        except requests.exceptions.ConnectionError:
+            return
+
+        if lines:
+
+            found = False
+            for arrival in lines:
+                if arrival["busID"] == busID:
+                    found = True
+                    dist = int(arrival["stationDiff"])
+                    if not lineNo:
+                        lineNo = arrival["line"]
+                    break
+
+            if not found:
+                dist = 0
+
+            sleep(10)
+
+    sendNotification(f"Autobus {busID} na liniji {lineNo} je udaljen {dist} stanica!")
 
 
 def getArrivals(id):
@@ -121,6 +182,28 @@ def getArrivals(id):
                 arrival["busID"],
             )
         console.print(table)
+
+        wantNotify = questionary.confirm(
+            "Da li zelite da dobijete notifikaciju kad se određeni autobus približi?"
+        ).ask()
+
+        if wantNotify:
+            choices = [
+                f"[{i['line']}] ({i['busID']}) {i['stationDiff']} stanica daleko"
+                for i in lines
+            ]
+            arrToCheck = questionary.checkbox(
+                "Izaberite dolaske koje želite da pratite", choices=choices
+            ).ask()
+
+            for arrival in arrToCheck:
+                busID = lines[choices.index(arrival)]["busID"]
+                threading.Thread(
+                    target=notifyArrival,
+                    args=(id, busID),
+                    name=f"nsmarter-notify:{busID}",
+                    daemon=True,
+                ).start()
 
     else:
         console.print("Nema dolazaka!")
@@ -270,6 +353,7 @@ if __name__ == "__main__":
     choices = ["Izbor stanica", "Izbor preseta", "Izlaz"]
     if config["useStats"] and not config["useTermux"]:
         choices.insert(2, "Pregled statistike")
+
     while 1 < 2:
         console.rule("NSmarter")
 

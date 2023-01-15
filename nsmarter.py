@@ -427,7 +427,7 @@ def presetsMenu():
 
     action = questionary.select(
         "Šta želite da uradite?",
-        choices=["Proveri dolaske", "Izbriši preset", "Preimenjuj preset", "Izlaz"],
+        choices=["Proveri dolaske", "Izbriši preset", "Preimenjuj preset", "Promeni stanice u presetu", "Izlaz"],
     ).ask()
 
     console.clear()
@@ -447,6 +447,28 @@ def presetsMenu():
         del presets[choice]
         savePresets()
         console.print(f"[bold green]Preset {choice} uspešno preimenovan u {newName}!")
+
+    elif action == "Promeni stanice u presetu":
+        options = []
+        optStr = []
+        for i in stations:
+            text = f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})"
+            if i in presets[choice]:
+                options.append(questionary.Choice(text, checked=True))
+            else:
+                options.append(text)
+            
+            optStr.append(text)
+
+        stNames = questionary.checkbox("Izaberite stanice:", choices=options).ask()
+        stIDs = [list(stations.keys())[optStr.index(i)] for i in stNames]
+        presets[choice] = stIDs
+
+        savePresets()
+
+        console.print(f"Preset {choice} [green]je izmenjen!")
+        utils.emptyInput()
+        return
 
     else:
         return

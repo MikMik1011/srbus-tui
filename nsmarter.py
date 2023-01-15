@@ -26,6 +26,12 @@ statsPath = os.path.join(dataDir, "stats.json")
 with open(configPath) as f:
     config = json.load(f)
 
+
+def saveConfig():
+    with open(configPath, "w") as f:
+        json.dump(config, f)
+
+
 if not os.path.exists(dataDir):
     os.makedirs(dataDir)
 
@@ -427,7 +433,13 @@ def presetsMenu():
 
     action = questionary.select(
         "Šta želite da uradite?",
-        choices=["Proveri dolaske", "Izbriši preset", "Preimenjuj preset", "Promeni stanice u presetu", "Izlaz"],
+        choices=[
+            "Proveri dolaske",
+            "Izbriši preset",
+            "Preimenjuj preset",
+            "Promeni stanice u presetu",
+            "Izlaz",
+        ],
     ).ask()
 
     console.clear()
@@ -457,7 +469,7 @@ def presetsMenu():
                 options.append(questionary.Choice(text, checked=True))
             else:
                 options.append(text)
-            
+
             optStr.append(text)
 
         stNames = questionary.checkbox("Izaberite stanice:", choices=options).ask()
@@ -556,13 +568,67 @@ def statsMenu():
     utils.emptyInput()
 
 
+def settingsMenu():
+    options = [
+        {
+            "name": f"Podrazumevana udaljenost stanica za notifikaciju: {config['stationsDistanceToNotify']}",
+            "value": "stationsDistanceToNotify",
+            "subMenuText": "Unesite novu podrazumevanu udaljenost stanica za notifikaciju:",
+        },
+        {"name": f"Upotreba statistike: {config['useStats']}", "value": "useStats"},
+        {"name": f"Termux mod: {config['useTermux']}", "value": "useTermux"},
+    ]
+
+    if config["useTermux"]:
+        options += [
+            {
+                "name": f"Boja LED lampice za notifikaciju (HEX RGB): {config['termuxNotifyLedClr']}",
+                "value": "termuxNotifyLedClr",
+                "subMenuText": "Unesite novu boju LED lampice u HEX RGB formatu:",
+            },
+            {
+                "name": f"Patern vibracije za notifikacije: {config['termuxNotifyVibPattern']}",
+                "value": "termuxNotifyVibPattern",
+                "subMenuText": "Unesite novi patern vibracije. Svaku vibraciju odvojite zarezom. Vrednost vibracije je u milisekundama.",
+            },
+        ]
+
+    options += [{"name": "Izlaz", "value": "Izlaz"}]
+    action = questionary.select("Šta želite da izmenite?", choices=options).ask()
+
+    if action == "Izlaz":
+        return
+
+    if type(config[action]) is not bool:
+        newData = questionary.text(
+            [i for i in options if i["value"] == action][0]["subMenuText"]
+        ).ask()
+        config[action] = newData
+    else:
+        newData = not config[action]
+
+    config[action] = newData
+    saveConfig()
+    console.print(
+        f'[bold green]Opcija {[i for i in options if i["value"] == action][0]["name"]} uspešno promenjena u {newData}!'
+    )
+
+
 if __name__ == "__main__":
     console.clear()
-    choices = ["Izbor stanica", "Izbor preseta", "Brza provera stanice", "Izlaz"]
-    if config["useStats"] and not config["useTermux"]:
-        choices.insert(3, "Pregled statistike")
 
     while 1 < 2:
+
+        choices = [
+            "Izbor stanica",
+            "Izbor preseta",
+            "Brza provera stanice",
+            "Podešavanja",
+            "Izlaz",
+        ]
+        if config["useStats"] and not config["useTermux"]:
+            choices.insert(3, "Pregled statistike")
+
         console.rule("NSmarter")
 
         choice = questionary.select("Izaberite opciju:", choices).ask()
@@ -581,6 +647,10 @@ if __name__ == "__main__":
 
         elif choice == "Pregled statistike":
             statsMenu()
+            console.clear()
+
+        elif choice == "Podešavanja":
+            settingsMenu()
             console.clear()
 
         elif choice == "Izlaz":

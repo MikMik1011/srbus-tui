@@ -317,7 +317,7 @@ def findStation():
             utils.emptyInput()
             return
 
-    else:
+    elif method == "Putem imena stanice":
 
         name = questionary.text("Unesite ime (ili deo imena) stanice:").ask()
         with console.status("Pretraga stanica u toku!"):
@@ -344,6 +344,9 @@ def findStation():
         id = list(eligibleStations.keys())[stList.index(choice)]
         station = eligibleStations[id]
 
+    else:
+        return
+        
     return (id, station)
 
 

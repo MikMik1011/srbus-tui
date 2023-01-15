@@ -1,329 +1,14 @@
-import requests
-from datetime import date
-import threading
-from time import sleep
 from collections import Counter
 
 import questionary
 from rich.console import Console
-from rich.table import Table
-from rich import box
 
 console = Console()
 
-from modules import utils, data
+from modules import data, utils, stations
 
 if data.config["useStats"] and not data.config["useTermux"]:
     import matplotlib.pyplot as plt
-
-allStations = None
-
-def checkStation(id):
-    arrivals = []
-
-    resp = requests.get(
-        f"{data.config['stationEndpointURL']}{id}",
-        headers={"X-Api-Authentication": data.config["apikey"], "User-Agent": "nsmarter"},
-    ).json()
-
-    if resp[0]["just_coordinates"] != "1":
-
-        for arr in resp:
-            diff = utils.stationDifference(
-                arr["all_stations"], id, arr["vehicles"][0]["station_number"]
-            )
-            if diff < 0:
-                continue
-
-            arrivals.append(
-                {
-                    "line": arr["line_number"],
-                    "eta": arr["seconds_left"],
-                    "busID": arr["vehicles"][0]["garageNo"],
-                    "lastStation": arr["vehicles"][0]["station_name"],
-                    "stationDiff": str(diff),
-                }
-            )
-    arrivals.reverse()
-    return arrivals
-
-
-def notifyArrival(stId, busID, statDist):
-
-    statDist = int(statDist)
-    dist = None
-    lineNo = None
-
-    while dist == None or dist > statDist:
-
-        try:
-            lines = checkStation(stId)
-        except requests.exceptions.ConnectionError:
-            return
-
-        if lines:
-
-            found = False
-            for arrival in lines:
-                if arrival["busID"] == busID:
-                    found = True
-                    dist = int(arrival["stationDiff"])
-                    if not lineNo:
-                        lineNo = arrival["line"]
-                    break
-
-            if not found:
-                dist = 0
-
-            sleep(10)
-
-    utils.sendNotification(
-        f"Autobus {busID} na liniji {lineNo} je udaljen {dist} stanica!",
-        f"nsmarter-{lineNo}",
-    )
-
-
-def getArrivals(id, station=None):
-    id = str(id)
-    station = station or data.stations[id]
-    console.rule(f"Stanica {station['name']} ({station['sid']}):")
-
-    try:
-        with console.status("Provera dolazaka je u toku!"):
-            lines = checkStation(id)
-    except requests.exceptions.ConnectionError:
-        console.print("Proverite internet konekciju!")
-        return
-
-    if data.config["useStats"] and not data.config["useTermux"]:
-
-        if not data.stats.get(id):
-            data.stats[id] = {}
-
-        today = date.today().strftime("%Y-%m-%d")
-
-        if not data.stats[id].get(today):
-            data.stats[id][today] = 0
-
-        data.stats[id][today] += 1
-
-        data.saveStats()
-
-    if lines:
-        table = Table(box=box.ROUNDED, show_lines=True)
-        table.add_column("Linija", justify="center")
-        table.add_column("ETA", justify="center")
-        table.add_column("Br. stanica", justify="center")
-        table.add_column("Trenutna stanica", justify="center")
-        table.add_column("ID busa", justify="center")
-
-        for arrival in lines:
-            table.add_row(
-                arrival["line"],
-                utils.secondsToTimeString(arrival["eta"]),
-                arrival["stationDiff"],
-                arrival["lastStation"],
-                arrival["busID"],
-            )
-        console.print(table)
-
-        wantNotify = questionary.confirm(
-            "Da li zelite da dobijete notifikaciju kad se određeni autobus približi?"
-        ).ask()
-
-        if wantNotify:
-            choices = [
-                f"[{i['line']}] ({i['busID']}) {i['stationDiff']} stanica daleko"
-                for i in lines
-            ]
-            arrToCheck = questionary.checkbox(
-                "Izaberite dolaske koje želite da pratite", choices=choices
-            ).ask()
-
-            distToNotify = questionary.text(
-                f"Unesite udaljenost stanica kada želite biti obavešteni (podrazumevano {data.config['stationsDistanceToNotify']}):"
-            ).ask()
-            if distToNotify:
-                distToNotify = int(distToNotify)
-            else:
-                distToNotify = int(data.config["stationsDistanceToNotify"])
-
-            for arrival in arrToCheck:
-                busID = lines[choices.index(arrival)]["busID"]
-                threading.Thread(
-                    target=notifyArrival,
-                    args=(id, busID, distToNotify),
-                    name=f"nsmarter-notify:{busID}",
-                    daemon=True,
-                ).start()
-
-    else:
-        console.print("Nema dolazaka!")
-
-
-def searchStationByUUID(uuid):
-    global allStations
-    if not allStations:
-        allStations = requests.get(
-            data.config["allStationsEndpointURL"],
-            headers={
-                "X-Api-Authentication": data.config["apikey"],
-                "User-Agent": "nsmarter",
-            },
-        ).json()
-
-    uuid = uuid.lower()
-
-    for station in allStations["data.stations"]:
-        if station["station_id"].lower() == uuid:
-            st = dict()
-
-            st["name"] = station["name"]
-            st["coords"] = station["coordinates"]
-            st["sid"] = station["station_id"]
-
-            return (station["id"], st)
-
-
-def searchStationByName(name):
-    global allStations
-
-    if not allStations:
-        allStations = requests.get(
-            data.config["allStationsEndpointURL"],
-            headers={
-                "X-Api-Authentication": data.config["apikey"],
-                "User-Agent": "nsmarter",
-            },
-        ).json()
-
-    name = name.lower()
-
-    eligibleStations = {}
-
-    for station in allStations["data.stations"]:
-        if name in utils.cirULat(station["name"].lower()):
-
-            st = dict()
-            st["name"] = station["name"]
-            st["coords"] = station["coordinates"]
-            st["sid"] = station["station_id"]
-
-            eligibleStations[str(station["id"])] = st
-
-    return eligibleStations
-
-
-def findStation():
-    method = questionary.select(
-        "Kojom metodom želite pronaći stanicu?",
-        choices=["Putem UUID-ja", "Putem imena stanice", "Izlaz"],
-    ).ask()
-
-    if method == "Putem UUID-ja":
-
-        uuid = questionary.text("Unesite ID stanice:").ask()
-
-        try:
-            with console.status("Pretraga stanica u toku!"):
-                id, station = searchStationByUUID(utils.cirULat(uuid))
-        except TypeError:
-            console.print("[bold red]Tražena stanica nije nađena!")
-            utils.emptyInput()
-            return
-
-    elif method == "Putem imena stanice":
-
-        name = questionary.text("Unesite ime (ili deo imena) stanice:").ask()
-        with console.status("Pretraga stanica u toku!"):
-            eligibleStations = searchStationByName(utils.cirULat(name))
-
-        if not eligibleStations:
-            console.print("[bold red]Tražena stanica nije nađena!")
-            utils.emptyInput()
-            return
-
-        stList = [
-            f"{eligibleStations[str(i)]['name']} ({eligibleStations[str(i)]['sid']})"
-            for i in eligibleStations
-        ] + [
-            "Izlaz",
-        ]
-
-        choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
-
-        if choice == "Izlaz":
-            console.clear()
-            return
-
-        id = list(eligibleStations.keys())[stList.index(choice)]
-        station = eligibleStations[id]
-
-    else:
-        return
-        
-    return (id, station)
-
-
-def addStation():
-
-    try:
-        id, station = findStation()
-    except TypeError:
-        return
-
-    if data.stations.get(str(id)):
-        console.print("[bold red]Tražena stanica je već sačuvana!")
-        utils.emptyInput()
-        return
-    data.stations[str(id)] = station
-
-    data.saveStations()
-
-    console.print(f"Stanica {station['name']} [green] je sačuvana!")
-    utils.emptyInput()
-
-
-def stationsMenu():
-    console.clear()
-    console.rule("Stanice")
-    stList = [
-        f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
-    ] + [
-        "Unos nove stanice",
-        "Izlaz",
-    ]
-
-    choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
-
-    if choice == "Unos nove stanice":
-        addStation()
-        return
-
-    elif choice == "Izlaz":
-        return
-
-    id = list(data.stations.keys())[stList.index(choice)]
-
-    action = questionary.select(
-        "Šta želite da uradite?",
-        choices=["Proveri dolaske", "Izbriši stanicu", "Izlaz"],
-    ).ask()
-
-    console.clear()
-
-    if action == "Proveri dolaske":
-        getArrivals(id)
-
-    elif action == "Izbriši stanicu":
-        del data.stations[id]
-        data.saveStations()
-        console.print(f"[bold green]Stanica {choice} uspešno obrisana!")
-
-    else:
-        return
-
-    utils.emptyInput()
 
 
 def presetsMenu():
@@ -368,7 +53,7 @@ def presetsMenu():
     if action == "Proveri dolaske":
         console.rule(choice)
         for station in data.presets[choice]:
-            getArrivals(station)
+            stations.getArrivals(station)
 
     elif action == "Izbriši preset":
         del data.presets[choice]
@@ -412,11 +97,11 @@ def presetsMenu():
 
 def fastStationCheckMenu():
     try:
-        id, station = findStation()
+        id, station = stations.findStation()
     except TypeError:
         return
 
-    getArrivals(id, station)
+    stations.getArrivals(id, station)
 
     save = questionary.confirm(
         "Da li ipak želite da sačuvate stanicu?", default=False
@@ -556,7 +241,7 @@ if __name__ == "__main__":
         choice = questionary.select("Izaberite opciju:", choices).ask()
 
         if choice == "Izbor stanica":
-            stationsMenu()
+            stations.stationsMenu()
             console.clear()
 
         elif choice == "Izbor preseta":

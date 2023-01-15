@@ -1,4 +1,4 @@
-import data
+from . import data
 
 if not data.config["useTermux"]:
     from notifypy import Notify

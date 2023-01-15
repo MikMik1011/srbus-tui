@@ -46,13 +46,11 @@ def savePresets():
         json.dump(presets, f)
 
 
-if config["useStats"] and not config["useTermux"]:
-
-    if os.path.exists(statsPath):
-        with open(statsPath) as f:
-            stats = json.load(f)
-    else:
-        stats = {}
+if os.path.exists(statsPath):
+    with open(statsPath) as f:
+        stats = json.load(f)
+else:
+    stats = {}
 
 
 def saveStats():

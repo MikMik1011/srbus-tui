@@ -246,7 +246,7 @@ def fastStationCheckMenu():
     getArrivals(id, station)
 
     save = questionary.confirm(
-        _("stationDeletedSucc"), default=False
+        _("fastSavePrompt"), default=False
     ).ask()
 
     if save:

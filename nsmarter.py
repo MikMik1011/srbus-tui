@@ -257,8 +257,10 @@ def searchStationByUUID(uuid):
             },
         ).json()
 
+    uuid = uuid.lower()
+
     for station in allStations["stations"]:
-        if station["station_id"] == uuid:
+        if station["station_id"].lower() == uuid:
             st = dict()
 
             st["name"] = station["name"]
@@ -280,10 +282,12 @@ def searchStationByName(name):
             },
         ).json()
 
+    name = name.lower()
+
     eligibleStations = {}
 
     for station in allStations["stations"]:
-        if name.lower() in station["name"].lower():
+        if name in utils.cirULat(station["name"].lower()):
 
             st = dict()
             st["name"] = station["name"]
@@ -307,7 +311,7 @@ def findStation():
 
         try:
             with console.status("Pretraga stanica u toku!"):
-                id, station = searchStationByUUID(uuid)
+                id, station = searchStationByUUID(utils.cirULat(uuid))
         except TypeError:
             console.print("[bold red]Tražena stanica nije nađena!")
             utils.emptyInput()
@@ -317,7 +321,7 @@ def findStation():
 
         name = questionary.text("Unesite ime (ili deo imena) stanice:").ask()
         with console.status("Pretraga stanica u toku!"):
-            eligibleStations = searchStationByName(name)
+            eligibleStations = searchStationByName(utils.cirULat(name))
 
         if not eligibleStations:
             console.print("[bold red]Tražena stanica nije nađena!")

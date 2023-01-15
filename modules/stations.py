@@ -7,8 +7,10 @@ from rich.table import Table
 from rich import box
 import questionary
 
-from . import data, utils, fetch
 from __main__ import console
+from . import data, utils, fetch
+from .i18n import getLocale as _
+
 
 def notifyArrival(stId, busID, statDist):
 
@@ -48,13 +50,13 @@ def notifyArrival(stId, busID, statDist):
 def getArrivals(id, station=None):
     id = str(id)
     station = station or data.stations[id]
-    console.rule(f"Stanica {station['name']} ({station['sid']}):")
+    console.rule(_("stationHeader").format(station['name'], station['sid']))
 
     try:
-        with console.status("Provera dolazaka je u toku!"):
+        with console.status(_("duringArrivalsCheck")):
             lines = fetch.checkStation(id)
     except requests.exceptions.ConnectionError:
-        console.print("Proverite internet konekciju!")
+        console.print(_("offline"))
         return
 
     if data.config["useStats"] and not data.config["useTermux"]:
@@ -73,11 +75,11 @@ def getArrivals(id, station=None):
 
     if lines:
         table = Table(box=box.ROUNDED, show_lines=True)
-        table.add_column("Linija", justify="center")
-        table.add_column("ETA", justify="center")
-        table.add_column("Br. stanica", justify="center")
-        table.add_column("Trenutna stanica", justify="center")
-        table.add_column("ID busa", justify="center")
+        table.add_column(_("line"), justify="center")
+        table.add_column(_("eta"), justify="center")
+        table.add_column(_("stationsDistance"), justify="center")
+        table.add_column(_("currentStation"), justify="center")
+        table.add_column(_("busID"), justify="center")
 
         for arrival in lines:
             table.add_row(
@@ -90,20 +92,20 @@ def getArrivals(id, station=None):
         console.print(table)
 
         wantNotify = questionary.confirm(
-            "Da li zelite da dobijete notifikaciju kad se određeni autobus približi?"
+            _("notificationPrompt")
         ).ask()
 
         if wantNotify:
             choices = [
-                f"[{i['line']}] ({i['busID']}) {i['stationDiff']} stanica daleko"
+                _("stationsFar").format(i['line'], i['busID'], i['stationDiff'])
                 for i in lines
             ]
             arrToCheck = questionary.checkbox(
-                "Izaberite dolaske koje želite da pratite", choices=choices
+                _("chooseArrivalsToTrack"), choices=choices
             ).ask()
 
             distToNotify = questionary.text(
-                f"Unesite udaljenost stanica kada želite biti obavešteni (podrazumevano {data.config['stationsDistanceToNotify']}):"
+                _("chooseDistanceToNotify").format(data.config['stationsDistanceToNotify'])
             ).ask()
             if distToNotify:
                 distToNotify = int(distToNotify)
@@ -120,36 +122,36 @@ def getArrivals(id, station=None):
                 ).start()
 
     else:
-        console.print("Nema dolazaka!")
+        console.print(_("noArrivals"))
 
 
 
 def findStation():
     method = questionary.select(
-        "Kojom metodom želite pronaći stanicu?",
-        choices=["Putem UUID-ja", "Putem imena stanice", "Izlaz"],
+        _("searchMethodPrompt"),
+        choices=[_("searchUUID"), _("searchName"), _("exit")],
     ).ask()
 
-    if method == "Putem UUID-ja":
+    if method == _("searchUUID"):
 
-        uuid = questionary.text("Unesite ID stanice:").ask()
+        uuid = questionary.text(_("enterUUID")).ask()
 
         try:
-            with console.status("Pretraga stanica u toku!"):
+            with console.status(_("stationsSearchStatus")):
                 id, station = fetch.searchStationByUUID(utils.cirULat(uuid))
         except TypeError:
-            console.print("[bold red]Tražena stanica nije nađena!")
+            console.print(_("stationNotFound"))
             utils.emptyInput()
             return
 
-    elif method == "Putem imena stanice":
+    elif method == _("searchName"):
 
-        name = questionary.text("Unesite ime (ili deo imena) stanice:").ask()
-        with console.status("Pretraga stanica u toku!"):
+        name = questionary.text(_("enterName")).ask()
+        with console.status(_("stationsSearchStatus")):
             eligibleStations = fetch.searchStationByName(utils.cirULat(name))
 
         if not eligibleStations:
-            console.print("[bold red]Tražena stanica nije nađena!")
+            console.print(_("stationNotFound"))
             utils.emptyInput()
             return
 
@@ -157,12 +159,12 @@ def findStation():
             f"{eligibleStations[str(i)]['name']} ({eligibleStations[str(i)]['sid']})"
             for i in eligibleStations
         ] + [
-            "Izlaz",
+            _("exit"),
         ]
 
-        choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+        choice = questionary.select(_("chooseStation"), choices=stList).ask()
 
-        if choice == "Izlaz":
+        if choice == _("exit"):
             console.clear()
             return
 
@@ -183,52 +185,52 @@ def addStation():
         return
 
     if data.stations.get(str(id)):
-        console.print("[bold red]Tražena stanica je već sačuvana!")
+        console.print(_("stationAlreadySaved"))
         utils.emptyInput()
         return
     data.stations[str(id)] = station
 
     data.saveStations()
 
-    console.print(f"Stanica {station['name']} [green] je sačuvana!")
+    console.print(_("stationSavedSucc").format(station['name']))
     utils.emptyInput()
 
 
 def stationsMenu():
     console.clear()
-    console.rule("Stanice")
+    console.rule(_("stationJustHeader"))
     stList = [
         f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
     ] + [
-        "Unos nove stanice",
-        "Izlaz",
+        _("enterNewStation"),
+        _("exit"),
     ]
 
-    choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+    choice = questionary.select(_("chooseStation"), choices=stList).ask()
 
-    if choice == "Unos nove stanice":
+    if choice == _("enterNewStation"):
         addStation()
         return
 
-    elif choice == "Izlaz":
+    elif choice == _("exit"):
         return
 
     id = list(data.stations.keys())[stList.index(choice)]
 
     action = questionary.select(
-        "Šta želite da uradite?",
-        choices=["Proveri dolaske", "Izbriši stanicu", "Izlaz"],
+        _("chooseAction"),
+        choices=[_("checkArrivals"), _("deleteStation"), _("exit")],
     ).ask()
 
     console.clear()
 
-    if action == "Proveri dolaske":
+    if action == _("checkArrivals"):
         getArrivals(id)
 
-    elif action == "Izbriši stanicu":
+    elif action == _("deleteStation"):
         del data.stations[id]
         data.saveStations()
-        console.print(f"[bold green]Stanica {choice} uspešno obrisana!")
+        console.print(_("stationDeletedSucc").format(choice))
 
     else:
         return
@@ -244,12 +246,12 @@ def fastStationCheckMenu():
     getArrivals(id, station)
 
     save = questionary.confirm(
-        "Da li ipak želite da sačuvate stanicu?", default=False
+        _("stationDeletedSucc"), default=False
     ).ask()
 
     if save:
         data.stations[str(id)] = station
         data.saveStations()
-        console.print(f"Stanica {station['name']} [green] je sačuvana!")
+        console.print(_("stationSavedSucc").format(station['name']))
 
     utils.emptyInput()

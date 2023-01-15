@@ -2,65 +2,66 @@ import questionary
 
 from __main__ import console
 from . import data, utils, stations
+from .i18n import getLocale as _
 
 
 def presetsMenu():
     console.clear()
-    console.rule("Preseti")
+    console.rule(_("presets"))
 
-    prList = [i for i in data.presets.keys()] + ["Napravi novi preset", "Izlaz"]
+    prList = [i for i in data.presets.keys()] + [_("createNewPreset"), _("exit")]
 
-    choice = questionary.select("Izaberite preset:", choices=prList).ask()
+    choice = questionary.select(_("choosePreset"), choices=prList).ask()
 
-    if choice == "Napravi novi preset":
-        name = questionary.text("Unesite ime preseta: ").ask()
+    if choice == _("createNewPreset"):
+        name = questionary.text(_("presetNamePrompt")).ask()
         stList = [
             f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
         ]
 
-        stNames = questionary.checkbox("Izaberite stanice:", choices=stList).ask()
+        stNames = questionary.checkbox(_("chooseStation"), choices=stList).ask()
         stIDs = [list(data.stations.keys())[stList.index(i)] for i in stNames]
         data.presets[name] = stIDs
 
         data.savePresets()
 
-        console.print(f"Preset {name} [green]je sačuvan!")
+        console.print(_("chooseStation").format(name))
         utils.emptyInput()
         return
 
-    elif choice == "Izlaz":
+    elif choice == _("exit"):
         return
 
     action = questionary.select(
-        "Šta želite da uradite?",
+        _("chooseAction"),
         choices=[
-            "Proveri dolaske",
-            "Izbriši preset",
-            "Preimenjuj preset",
-            "Promeni stanice u presetu",
-            "Izlaz",
+            _("checkArrivals"),
+            _("deletePreset"),
+            _("renamePreset"),
+            _("editPreset"),
+            _("exit"),
         ],
     ).ask()
 
     console.clear()
-    if action == "Proveri dolaske":
+    if action == _("checkArrivals"):
         console.rule(choice)
         for station in data.presets[choice]:
             stations.getArrivals(station)
 
-    elif action == "Izbriši preset":
+    elif action == _("deletePreset"):
         del data.presets[choice]
         data.savePresets()
-        console.print(f"[bold green]Preset {choice} uspešno obrisan!")
+        console.print(_("presetDeletedSucc").format(choice))
 
-    elif action == "Preimenjuj preset":
-        newName = questionary.text("Unesite novo ime preseta:").ask()
+    elif action == _("renamePreset"):
+        newName = questionary.text(_("presetNamePrompt")).ask()
         data.presets[newName] = data.presets[choice]
         del data.presets[choice]
         data.savePresets()
-        console.print(f"[bold green]Preset {choice} uspešno preimenovan u {newName}!")
+        console.print(_("presetRenamedSucc").format(choice, newName))
 
-    elif action == "Promeni stanice u presetu":
+    elif action == _("editPreset"):
         options = []
         optStr = []
         for i in data.stations:
@@ -72,13 +73,13 @@ def presetsMenu():
 
             optStr.append(text)
 
-        stNames = questionary.checkbox("Izaberite stanice:", choices=options).ask()
+        stNames = questionary.checkbox(_("chooseStation"), choices=options).ask()
         stIDs = [list(data.stations.keys())[optStr.index(i)] for i in stNames]
         data.presets[choice] = stIDs
 
         data.savePresets()
 
-        console.print(f"Preset {choice} [green]je izmenjen!")
+        console.print(_("presetEditedSucc").format(choice))
         utils.emptyInput()
         return
 

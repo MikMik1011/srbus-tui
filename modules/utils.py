@@ -1,4 +1,5 @@
 from . import data
+from .i18n import getLocale as _
 
 if not data.config["useTermux"]:
     from notifypy import Notify
@@ -31,7 +32,7 @@ def secondsToTimeString(sec):
 
 
 def emptyInput():
-    input("\nPritisnite Enter da biste nastavili!")
+    input(_("emptyInput"))
 
 
 def stationDifference(allStations, goalStation, currIndex):

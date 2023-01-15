@@ -2,36 +2,37 @@ import questionary
 
 from __main__ import console
 from . import data, utils
+from .i18n import getLocale as _
 
 def settingsMenu():
     options = [
         {
-            "name": f"Podrazumevana udaljenost stanica za notifikaciju: {data.config['stationsDistanceToNotify']}",
+            "name": _("stationsDistanceToNotify-name").format(data.config['stationsDistanceToNotify']),
             "value": "stationsDistanceToNotify",
-            "subMenuText": "Unesite novu podrazumevanu udaljenost stanica za notifikaciju:",
+            "subMenuText": _("stationsDistanceToNotify-subMenuText"),
         },
-        {"name": f"Upotreba statistike: {data.config['useStats']}", "value": "useStats"},
-        {"name": f"Termux mod: {data.config['useTermux']}", "value": "useTermux"},
+        {"name": _("useStats-name").format(data.config['useStats']), "value": "useStats"},
+        {"name": _("useTermux-name").format(data.config['useTermux']), "value": "useTermux"},
     ]
 
     if data.config["useTermux"]:
         options += [
             {
-                "name": f"Boja LED lampice za notifikaciju (HEX RGB): {data.config['termuxNotifyLedClr']}",
+                "name": "Boja LED lampice za notifikaciju (HEX RGB): {0}".format(data.config['termuxNotifyLedClr']),
                 "value": "termuxNotifyLedClr",
-                "subMenuText": "Unesite novu boju LED lampice u HEX RGB formatu:",
+                "subMenuText": _("termuxNotifyLedClr-subMenuText"),
             },
             {
-                "name": f"Patern vibracije za notifikacije: {data.config['termuxNotifyVibPattern']}",
+                "name": _("termuxNotifyVibPattern-name").format(data.config['termuxNotifyVibPattern']),
                 "value": "termuxNotifyVibPattern",
-                "subMenuText": "Unesite novi patern vibracije. Svaku vibraciju odvojite zarezom. Vrednost vibracije je u milisekundama.",
+                "subMenuText": _("termuxNotifyVibPattern-subMenuText"),
             },
         ]
 
-    options += [{"name": "Izlaz", "value": "Izlaz"}]
-    action = questionary.select("Šta želite da izmenite?", choices=options).ask()
+    options += [{"name": _("exit"), "value": _("exit")}]
+    action = questionary.select(_("chooseAction"), choices=options).ask()
 
-    if action == "Izlaz":
+    if action == _("exit"):
         return
 
     if type(data.config[action]) is not bool:
@@ -44,7 +45,8 @@ def settingsMenu():
 
     data.config[action] = newData
     data.saveConfig()
+
     console.print(
-        f'[bold green]Opcija {[i for i in options if i["value"] == action][0]["name"]} uspešno promenjena u {newData}!'
+        _("settingChangedSucc").format([i for i in options if i["value"] == action][0]["name"], newData)
     )
     utils.emptyInput()

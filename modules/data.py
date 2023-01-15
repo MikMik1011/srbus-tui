@@ -5,10 +5,12 @@ from __main__ import __file__
 
 scriptDir = os.path.dirname(os.path.abspath(__file__))
 configPath = os.path.join(scriptDir, "config.json")
+
 dataDir = os.path.join(scriptDir, "data")
 stationsPath = os.path.join(dataDir, "stations.json")
 presetsPath = os.path.join(dataDir, "presets.json")
 statsPath = os.path.join(dataDir, "stats.json")
+localesDir = os.path.join(scriptDir, "locales")
 
 with open(configPath) as f:
     config = json.load(f)
@@ -56,3 +58,12 @@ else:
 def saveStats():
     with open(statsPath, "w") as f:
         json.dump(stats, f)
+
+def readLocaleFile(lang):
+    fileName = f"{lang}.json"
+    localePath = os.path.join(localesDir, fileName)
+
+    assert os.path.exists(dataDir), f"{localePath} doesn't exist!"
+    
+    with open(localePath) as f:
+        return json.load(f)

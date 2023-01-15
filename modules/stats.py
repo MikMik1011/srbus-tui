@@ -3,19 +3,23 @@ import questionary
 
 from __main__ import console
 from . import data, utils
+from .i18n import getLocale as _
 
-def showStatsForStation(id, name):
+if not data.config["useTermux"]:
+    import matplotlib.pyplot as plt
+
+
+def showStatsForStation(id):
     st = data.stats.get(id)
     if not st:
-        console.print("[bold red]Nema podataka o ovoj stanici!")
+        console.print(_("noStationStats"))
         return
 
-    plt.title("Broj pretraga stranice po danima")
-    plt.suptitle(f"Stanica: {name}")
+    plt.title(_("stationSearchesDaily"))
     plt.bar(list(st.keys()), list(st.values()))
-    plt.xlabel("Datumi")
-    plt.ylabel("Broj pretraga")
-    with console.status("Otvaranje prozora sa grafikonom"):
+    plt.xlabel(_("dates"))
+    plt.ylabel(_("numberOfSearches"))
+    with console.status(_("openPlt")):
         plt.show()
 
 def showStatsTotal():
@@ -25,54 +29,49 @@ def showStatsTotal():
         allDays += Counter(data.stats[station])
     allDays = dict(allDays)
 
-    plt.title("Ukupan broj pretraga po danima")
+    plt.title(_("totalSearchesDaily"))
     plt.bar(list(allDays.keys()), list(allDays.values()))
-    plt.xlabel("Datumi")
-    plt.ylabel("Broj pretraga")
+    plt.xlabel(_("dates"))
+    plt.ylabel(_("numberOfSearches"))
 
-    with console.status("Otvaranje prozora sa grafikonom"):
+    with console.status(_("openPlt")):
         plt.show()
 
 matPlotImported = False
 
 def statsMenu():
 
-    global matPlotImported
-    if not matPlotImported:
-        with console.status("Učitavanje [italic]matplotlib [not italic]biblioteke"):
-            import matplotlib.pyplot as plt
-            matPlotImported = True
 
     console.clear()
-    console.rule("Statistika")
+    console.rule(_("stats"))
 
     statType = questionary.select(
-        "Izaberite tip statistike",
+        _("chooseStatsType"),
         choices=[
-            "Broj pretraga stranice po danima",
-            "Ukupan broj pretraga po danima",
-            "Izlaz"
+            _("stationSearchesDaily"),
+            _("totalSearchesDaily"),
+            _("exit")
         ],
     ).ask()
 
-    if statType == "Broj pretraga stranice po danima":
+    if statType == _("stationSearchesDaily"):
 
         stList = [
             f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
         ] + [
-            "Izlaz",
+            _("exit"),
         ]
 
-        choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+        choice = questionary.select(_("chooseStation"), choices=stList).ask()
 
-        if choice == "Izlaz":
+        if choice == _("exit"):
             return
 
         id = str(list(data.stations.keys())[stList.index(choice)])
         console.clear()
-        showStatsForStation(id, choice)
+        showStatsForStation(id)
 
-    elif statType == "Ukupan broj pretraga po danima":
+    elif statType == _("totalSearchesDaily"):
         showStatsTotal()
 
     else:

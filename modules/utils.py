@@ -1,3 +1,31 @@
+import data
+
+if not data.config["useTermux"]:
+    from notifypy import Notify
+else:
+    from termux import Notification as tNotify
+
+def sendNotification(text, nid=None):
+    if not data.config["useTermux"]:
+        notification = Notify()
+        notification.title = "NSmarter"
+        notification.message = text
+        notification.send()
+
+    else:
+        tNotify.notify(
+            title="NSmarter",
+            content=text,
+            nid=nid or text,
+            kwargs={
+                "group": "nsmarter",
+                "led-color": data.config["termuxNotifyLedClr"],
+                "vibrate": data.config["termuxNotifyVibPattern"],
+                "priority": "max",
+            },
+        )
+
+
 def secondsToTimeString(sec):
     return f"{sec // 60}:{sec % 60 :02}"
 

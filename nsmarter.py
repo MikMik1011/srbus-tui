@@ -1,6 +1,4 @@
-import os
 import requests
-import json
 from datetime import date
 import threading
 from time import sleep
@@ -13,102 +11,19 @@ from rich import box
 
 console = Console()
 
-import utils
+from modules import utils, data
 
-
-scriptDir = os.path.dirname(os.path.abspath(__file__))
-configPath = os.path.join(scriptDir, "config.json")
-dataDir = os.path.join(scriptDir, "data")
-stationsPath = os.path.join(dataDir, "stations.json")
-presetsPath = os.path.join(dataDir, "presets.json")
-statsPath = os.path.join(dataDir, "stats.json")
-
-with open(configPath) as f:
-    config = json.load(f)
-
-
-def saveConfig():
-    with open(configPath, "w") as f:
-        json.dump(config, f)
-
-
-if not os.path.exists(dataDir):
-    os.makedirs(dataDir)
-
-if os.path.exists(stationsPath):
-    with open(stationsPath) as f:
-        stations = json.load(f)
-else:
-    stations = {}
-
-allStations = None
-
-
-def saveStations():
-    with open(stationsPath, "w") as f:
-        json.dump(stations, f)
-
-
-if os.path.exists(presetsPath):
-    with open(presetsPath) as f:
-        presets = json.load(f)
-else:
-    presets = {}
-
-
-def savePresets():
-    with open(presetsPath, "w") as f:
-        json.dump(presets, f)
-
-
-if config["useStats"] and not config["useTermux"]:
+if data.config["useStats"] and not data.config["useTermux"]:
     import matplotlib.pyplot as plt
 
-    if os.path.exists(statsPath):
-        with open(statsPath) as f:
-            stats = json.load(f)
-    else:
-        stats = {}
-
-
-def saveStats():
-    with open(statsPath, "w") as f:
-        json.dump(stats, f)
-
-
-if not config["useTermux"]:
-    from notifypy import Notify
-else:
-    from termux import Notification as tNotify
-
-
-def sendNotification(text, nid=None):
-    if not config["useTermux"]:
-        notification = Notify()
-        notification.title = "NSmarter"
-        notification.message = text
-        notification.send()
-
-    else:
-        tNotify.notify(
-            title="NSmarter",
-            content=text,
-            nid=nid or text,
-            kwargs={
-                "group": "nsmarter",
-                "led-color": config["termuxNotifyLedClr"],
-                "vibrate": config["termuxNotifyVibPattern"],
-                "priority": "max",
-            },
-        )
-
+allStations = None
 
 def checkStation(id):
     arrivals = []
 
     resp = requests.get(
-        f"{config['stationEndpointURL']}{id}",
-        headers={"X-Api-Authentication": config["apikey"], "User-Agent": "nsmarter"},
+        f"{data.config['stationEndpointURL']}{id}",
+        headers={"X-Api-Authentication": data.config["apikey"], "User-Agent": "nsmarter"},
     ).json()
 
     if resp[0]["just_coordinates"] != "1":
@@ -162,7 +77,7 @@ def notifyArrival(stId, busID, statDist):
 
             sleep(10)
 
-    sendNotification(
+    utils.sendNotification(
         f"Autobus {busID} na liniji {lineNo} je udaljen {dist} stanica!",
         f"nsmarter-{lineNo}",
     )
@@ -170,7 +85,7 @@ def notifyArrival(stId, busID, statDist):
 
 def getArrivals(id, station=None):
     id = str(id)
-    station = station or stations[id]
+    station = station or data.stations[id]
     console.rule(f"Stanica {station['name']} ({station['sid']}):")
 
     try:
@@ -180,19 +95,19 @@ def getArrivals(id, station=None):
         console.print("Proverite internet konekciju!")
         return
 
-    if config["useStats"] and not config["useTermux"]:
+    if data.config["useStats"] and not data.config["useTermux"]:
 
-        if not stats.get(id):
-            stats[id] = {}
+        if not data.stats.get(id):
+            data.stats[id] = {}
 
         today = date.today().strftime("%Y-%m-%d")
 
-        if not stats[id].get(today):
-            stats[id][today] = 0
+        if not data.stats[id].get(today):
+            data.stats[id][today] = 0
 
-        stats[id][today] += 1
+        data.stats[id][today] += 1
 
-        saveStats()
+        data.saveStats()
 
     if lines:
         table = Table(box=box.ROUNDED, show_lines=True)
@@ -226,12 +141,12 @@ def getArrivals(id, station=None):
             ).ask()
 
             distToNotify = questionary.text(
-                f"Unesite udaljenost stanica kada želite biti obavešteni (podrazumevano {config['stationsDistanceToNotify']}):"
+                f"Unesite udaljenost stanica kada želite biti obavešteni (podrazumevano {data.config['stationsDistanceToNotify']}):"
             ).ask()
             if distToNotify:
                 distToNotify = int(distToNotify)
             else:
-                distToNotify = int(config["stationsDistanceToNotify"])
+                distToNotify = int(data.config["stationsDistanceToNotify"])
 
             for arrival in arrToCheck:
                 busID = lines[choices.index(arrival)]["busID"]
@@ -250,16 +165,16 @@ def searchStationByUUID(uuid):
     global allStations
     if not allStations:
         allStations = requests.get(
-            config["allStationsEndpointURL"],
+            data.config["allStationsEndpointURL"],
             headers={
-                "X-Api-Authentication": config["apikey"],
+                "X-Api-Authentication": data.config["apikey"],
                 "User-Agent": "nsmarter",
             },
         ).json()
 
     uuid = uuid.lower()
 
-    for station in allStations["stations"]:
+    for station in allStations["data.stations"]:
         if station["station_id"].lower() == uuid:
             st = dict()
 
@@ -275,9 +190,9 @@ def searchStationByName(name):
 
     if not allStations:
         allStations = requests.get(
-            config["allStationsEndpointURL"],
+            data.config["allStationsEndpointURL"],
             headers={
-                "X-Api-Authentication": config["apikey"],
+                "X-Api-Authentication": data.config["apikey"],
                 "User-Agent": "nsmarter",
             },
         ).json()
@@ -286,7 +201,7 @@ def searchStationByName(name):
 
     eligibleStations = {}
 
-    for station in allStations["stations"]:
+    for station in allStations["data.stations"]:
         if name in utils.cirULat(station["name"].lower()):
 
             st = dict()
@@ -357,13 +272,13 @@ def addStation():
     except TypeError:
         return
 
-    if stations.get(str(id)):
+    if data.stations.get(str(id)):
         console.print("[bold red]Tražena stanica je već sačuvana!")
         utils.emptyInput()
         return
-    stations[str(id)] = station
+    data.stations[str(id)] = station
 
-    saveStations()
+    data.saveStations()
 
     console.print(f"Stanica {station['name']} [green] je sačuvana!")
     utils.emptyInput()
@@ -373,7 +288,7 @@ def stationsMenu():
     console.clear()
     console.rule("Stanice")
     stList = [
-        f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+        f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
     ] + [
         "Unos nove stanice",
         "Izlaz",
@@ -388,7 +303,7 @@ def stationsMenu():
     elif choice == "Izlaz":
         return
 
-    id = list(stations.keys())[stList.index(choice)]
+    id = list(data.stations.keys())[stList.index(choice)]
 
     action = questionary.select(
         "Šta želite da uradite?",
@@ -401,8 +316,8 @@ def stationsMenu():
         getArrivals(id)
 
     elif action == "Izbriši stanicu":
-        del stations[id]
-        saveStations()
+        del data.stations[id]
+        data.saveStations()
         console.print(f"[bold green]Stanica {choice} uspešno obrisana!")
 
     else:
@@ -415,21 +330,21 @@ def presetsMenu():
     console.clear()
     console.rule("Preseti")
 
-    prList = [i for i in presets.keys()] + ["Napravi novi preset", "Izlaz"]
+    prList = [i for i in data.presets.keys()] + ["Napravi novi preset", "Izlaz"]
 
     choice = questionary.select("Izaberite preset:", choices=prList).ask()
 
     if choice == "Napravi novi preset":
         name = questionary.text("Unesite ime preseta: ").ask()
         stList = [
-            f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+            f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
         ]
 
         stNames = questionary.checkbox("Izaberite stanice:", choices=stList).ask()
-        stIDs = [list(stations.keys())[stList.index(i)] for i in stNames]
-        presets[name] = stIDs
+        stIDs = [list(data.stations.keys())[stList.index(i)] for i in stNames]
+        data.presets[name] = stIDs
 
-        savePresets()
+        data.savePresets()
 
         console.print(f"Preset {name} [green]je sačuvan!")
         utils.emptyInput()
@@ -452,27 +367,27 @@ def presetsMenu():
     console.clear()
     if action == "Proveri dolaske":
         console.rule(choice)
-        for station in presets[choice]:
+        for station in data.presets[choice]:
             getArrivals(station)
 
     elif action == "Izbriši preset":
-        del presets[choice]
-        savePresets()
+        del data.presets[choice]
+        data.savePresets()
         console.print(f"[bold green]Preset {choice} uspešno obrisan!")
 
     elif action == "Preimenjuj preset":
         newName = questionary.text("Unesite novo ime preseta:").ask()
-        presets[newName] = presets[choice]
-        del presets[choice]
-        savePresets()
+        data.presets[newName] = data.presets[choice]
+        del data.presets[choice]
+        data.savePresets()
         console.print(f"[bold green]Preset {choice} uspešno preimenovan u {newName}!")
 
     elif action == "Promeni stanice u presetu":
         options = []
         optStr = []
-        for i in stations:
-            text = f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})"
-            if i in presets[choice]:
+        for i in data.stations:
+            text = f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})"
+            if i in data.presets[choice]:
                 options.append(questionary.Choice(text, checked=True))
             else:
                 options.append(text)
@@ -480,10 +395,10 @@ def presetsMenu():
             optStr.append(text)
 
         stNames = questionary.checkbox("Izaberite stanice:", choices=options).ask()
-        stIDs = [list(stations.keys())[optStr.index(i)] for i in stNames]
-        presets[choice] = stIDs
+        stIDs = [list(data.stations.keys())[optStr.index(i)] for i in stNames]
+        data.presets[choice] = stIDs
 
-        savePresets()
+        data.savePresets()
 
         console.print(f"Preset {choice} [green]je izmenjen!")
         utils.emptyInput()
@@ -508,15 +423,15 @@ def fastStationCheckMenu():
     ).ask()
 
     if save:
-        stations[str(id)] = station
-        saveStations()
+        data.stations[str(id)] = station
+        data.saveStations()
         console.print(f"Stanica {station['name']} [green] je sačuvana!")
 
     utils.emptyInput()
 
 
 def showStatsForStation(id, name):
-    st = stats.get(id)
+    st = data.stats.get(id)
     if not st:
         console.print("[bold red]Nema podataka o ovoj stanici!")
         return
@@ -545,7 +460,7 @@ def statsMenu():
     if statType == "Broj pretraga stranice po danima":
 
         stList = [
-            f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+            f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
         ] + [
             "Izlaz",
         ]
@@ -555,14 +470,14 @@ def statsMenu():
         if choice == "Izlaz":
             return
 
-        id = str(list(stations.keys())[stList.index(choice)])
+        id = str(list(data.stations.keys())[stList.index(choice)])
         console.clear()
         showStatsForStation(id, choice)
 
     elif statType == "Ukupan broj pretraga po danima":
         allDays = Counter()
-        for station in stats:
-            allDays += Counter(stats[station])
+        for station in data.stats:
+            allDays += Counter(data.stats[station])
         allDays = dict(allDays)
 
         plt.title("Ukupan broj pretraga po danima")
@@ -578,23 +493,23 @@ def statsMenu():
 def settingsMenu():
     options = [
         {
-            "name": f"Podrazumevana udaljenost stanica za notifikaciju: {config['stationsDistanceToNotify']}",
+            "name": f"Podrazumevana udaljenost stanica za notifikaciju: {data.config['stationsDistanceToNotify']}",
             "value": "stationsDistanceToNotify",
             "subMenuText": "Unesite novu podrazumevanu udaljenost stanica za notifikaciju:",
         },
-        {"name": f"Upotreba statistike: {config['useStats']}", "value": "useStats"},
-        {"name": f"Termux mod: {config['useTermux']}", "value": "useTermux"},
+        {"name": f"Upotreba statistike: {data.config['useStats']}", "value": "useStats"},
+        {"name": f"Termux mod: {data.config['useTermux']}", "value": "useTermux"},
     ]
 
-    if config["useTermux"]:
+    if data.config["useTermux"]:
         options += [
             {
-                "name": f"Boja LED lampice za notifikaciju (HEX RGB): {config['termuxNotifyLedClr']}",
+                "name": f"Boja LED lampice za notifikaciju (HEX RGB): {data.config['termuxNotifyLedClr']}",
                 "value": "termuxNotifyLedClr",
                 "subMenuText": "Unesite novu boju LED lampice u HEX RGB formatu:",
             },
             {
-                "name": f"Patern vibracije za notifikacije: {config['termuxNotifyVibPattern']}",
+                "name": f"Patern vibracije za notifikacije: {data.config['termuxNotifyVibPattern']}",
                 "value": "termuxNotifyVibPattern",
                 "subMenuText": "Unesite novi patern vibracije. Svaku vibraciju odvojite zarezom. Vrednost vibracije je u milisekundama.",
             },
@@ -606,16 +521,16 @@ def settingsMenu():
     if action == "Izlaz":
         return
 
-    if type(config[action]) is not bool:
+    if type(data.config[action]) is not bool:
         newData = questionary.text(
             [i for i in options if i["value"] == action][0]["subMenuText"]
         ).ask()
-        config[action] = newData
+        data.config[action] = newData
     else:
-        newData = not config[action]
+        newData = not data.config[action]
 
-    config[action] = newData
-    saveConfig()
+    data.config[action] = newData
+    data.saveConfig()
     console.print(
         f'[bold green]Opcija {[i for i in options if i["value"] == action][0]["name"]} uspešno promenjena u {newData}!'
     )
@@ -633,7 +548,7 @@ if __name__ == "__main__":
             "Podešavanja",
             "Izlaz",
         ]
-        if config["useStats"] and not config["useTermux"]:
+        if data.config["useStats"] and not data.config["useTermux"]:
             choices.insert(3, "Pregled statistike")
 
         console.rule("NSmarter")

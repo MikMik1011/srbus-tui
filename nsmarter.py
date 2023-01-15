@@ -37,6 +37,7 @@ else:
 
 allStations = None
 
+
 def saveStations():
     with open(stationsPath, "w") as f:
         json.dump(stations, f)
@@ -48,9 +49,11 @@ if os.path.exists(presetsPath):
 else:
     presets = {}
 
+
 def savePresets():
     with open(presetsPath, "w") as f:
-            json.dump(presets, f)
+        json.dump(presets, f)
+
 
 if config["useStats"] and not config["useTermux"]:
     import matplotlib.pyplot as plt
@@ -61,9 +64,11 @@ if config["useStats"] and not config["useTermux"]:
     else:
         stats = {}
 
+
 def saveStats():
     with open(statsPath, "w") as f:
-            json.dump(stats, f)
+        json.dump(stats, f)
+
 
 if not config["useTermux"]:
     from notifypy import Notify
@@ -235,7 +240,7 @@ def getArrivals(id, station=None):
         console.print("Nema dolazaka!")
 
 
-def searchStation(uuid):
+def searchStationByUUID(uuid):
     global allStations
     if not allStations:
         allStations = requests.get(
@@ -257,13 +262,86 @@ def searchStation(uuid):
             return (station["id"], st)
 
 
-def addStation(uuid):
-    try:
+def searchStationByName(name):
+    global allStations
+
+    if not allStations:
+        allStations = requests.get(
+            config["allStationsEndpointURL"],
+            headers={
+                "X-Api-Authentication": config["apikey"],
+                "User-Agent": "nsmarter",
+            },
+        ).json()
+
+    eligibleStations = {}
+
+    for station in allStations["stations"]:
+        if name.lower() in station["name"].lower():
+
+            st = dict()
+            st["name"] = station["name"]
+            st["coords"] = station["coordinates"]
+            st["sid"] = station["station_id"]
+
+            eligibleStations[str(station["id"])] = st
+
+    return eligibleStations
+
+
+def findStation():
+    method = questionary.select(
+        "Kojom metodom želite pronaći stanicu?",
+        choices=["Putem UUID-ja", "Putem imena stanice", "Izlaz"],
+    ).ask()
+
+    if method == "Putem UUID-ja":
+
+        uuid = questionary.text("Unesite ID stanice:").ask()
+
+        try:
+            with console.status("Pretraga stanica u toku!"):
+                id, station = searchStationByUUID(uuid)
+        except TypeError:
+            console.print("[bold red]Tražena stanica nije nađena!")
+            utils.emptyInput()
+            return
+
+    else:
+
+        name = questionary.text("Unesite ime (ili deo imena) stanice:").ask()
         with console.status("Pretraga stanica u toku!"):
-            id, station = searchStation(uuid)
+            eligibleStations = searchStationByName(name)
+
+        if not eligibleStations:
+            console.print("[bold red]Tražena stanica nije nađena!")
+            utils.emptyInput()
+            return
+
+        stList = [
+            f"{eligibleStations[str(i)]['name']} ({eligibleStations[str(i)]['sid']})"
+            for i in eligibleStations
+        ] + [
+            "Izlaz",
+        ]
+
+        choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+
+        if choice == "Izlaz":
+            console.clear()
+            return
+
+        id = list(eligibleStations.keys())[stList.index(choice)]
+        station = eligibleStations[id]
+
+    return (id, station)
+
+
+def addStation():
+
+    try:
+        id, station = findStation()
     except TypeError:
-        console.print("[bold red]Tražena stanica nije nađena!")
-        utils.emptyInput()
         return
 
     if stations.get(str(id)):
@@ -291,8 +369,7 @@ def stationsMenu():
     choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
 
     if choice == "Unos nove stanice":
-        uuid = questionary.text("Unesite ID stanice: ").ask()
-        addStation(uuid)
+        addStation()
         return
 
     elif choice == "Izlaz":
@@ -300,12 +377,11 @@ def stationsMenu():
 
     id = list(stations.keys())[stList.index(choice)]
 
-    action = questionary.select("Šta želite da uradite?", choices=[
-        "Proveri dolaske",
-        "Izbriši stanicu",
-        "Izlaz"
-    ]).ask()
-    
+    action = questionary.select(
+        "Šta želite da uradite?",
+        choices=["Proveri dolaske", "Izbriši stanicu", "Izlaz"],
+    ).ask()
+
     console.clear()
 
     if action == "Proveri dolaske":
@@ -349,13 +425,11 @@ def presetsMenu():
     elif choice == "Izlaz":
         return
 
-    action = questionary.select("Šta želite da uradite?", choices=[
-        "Proveri dolaske",
-        "Izbriši preset",
-        "Preimenjuj preset",
-        "Izlaz"
-    ]).ask()
-    
+    action = questionary.select(
+        "Šta želite da uradite?",
+        choices=["Proveri dolaske", "Izbriši preset", "Preimenjuj preset", "Izlaz"],
+    ).ask()
+
     console.clear()
     if action == "Proveri dolaske":
         console.rule(choice)
@@ -376,24 +450,21 @@ def presetsMenu():
 
     else:
         return
-    
 
     utils.emptyInput()
 
-def fastStationCheckMenu():
-    uuid = questionary.text("Unesite ID stanice:").ask()
 
+def fastStationCheckMenu():
     try:
-        with console.status("Pretraga stanica u toku!"):
-            id, station = searchStation(uuid)
+        id, station = findStation()
     except TypeError:
-        console.print("[bold red]Tražena stanica nije nađena!")
-        utils.emptyInput()
         return
 
     getArrivals(id, station)
 
-    save = questionary.confirm("Da li ipak želite da sačuvate stanicu?", default=False).ask()
+    save = questionary.confirm(
+        "Da li ipak želite da sačuvate stanicu?", default=False
+    ).ask()
 
     if save:
         stations[str(id)] = station
@@ -422,10 +493,13 @@ def statsMenu():
     console.clear()
     console.rule("Statistika")
 
-    statType = questionary.select("Izaberite tip statistike", choices=[
-        "Broj pretraga stranice po danima",
-        "Ukupan broj pretraga po danima",
-    ]).ask()
+    statType = questionary.select(
+        "Izaberite tip statistike",
+        choices=[
+            "Broj pretraga stranice po danima",
+            "Ukupan broj pretraga po danima",
+        ],
+    ).ask()
 
     if statType == "Broj pretraga stranice po danima":
 
@@ -443,7 +517,7 @@ def statsMenu():
         id = str(list(stations.keys())[stList.index(choice)])
         console.clear()
         showStatsForStation(id, choice)
-    
+
     elif statType == "Ukupan broj pretraga po danima":
         allDays = Counter()
         for station in stats:
@@ -458,6 +532,7 @@ def statsMenu():
             plt.show()
 
     utils.emptyInput()
+
 
 if __name__ == "__main__":
     console.clear()

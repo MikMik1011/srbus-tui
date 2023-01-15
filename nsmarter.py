@@ -29,25 +29,22 @@ if __name__ == "__main__":
 
         if choice == _("chooseStation"):
             stations.stationsMenu()
-            console.clear()
 
         elif choice == _("choosePreset"):
             presets.presetsMenu()
-            console.clear()
 
         elif choice == _("quickStationCheck"):
             stations.fastStationCheckMenu()
-            console.clear()
 
         elif choice == _("checkStats"):
             stats.statsMenu()
-            console.clear()
 
         elif choice == _("settings"):
             settings.settingsMenu()
-            console.clear()
 
         elif choice == _("exit"):
             console.clear()
             console.print(_("exitMsg"))
             exit()
+
+        console.clear()

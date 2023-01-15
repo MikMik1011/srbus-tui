@@ -35,6 +35,8 @@ if os.path.exists(stationsPath):
 else:
     stations = {}
 
+allStations = None
+
 def saveStations():
     with open(stationsPath, "w") as f:
         json.dump(stations, f)
@@ -155,9 +157,9 @@ def notifyArrival(stId, busID, statDist):
     )
 
 
-def getArrivals(id):
+def getArrivals(id, station=None):
     id = str(id)
-    station = stations[id]
+    station = station or stations[id]
     console.rule(f"Stanica {station['name']} ({station['sid']}):")
 
     try:
@@ -234,15 +236,17 @@ def getArrivals(id):
 
 
 def searchStation(uuid):
-    resp = requests.get(
-        config["allStationsEndpointURL"],
-        headers={
-            "X-Api-Authentication": config["apikey"],
-            "User-Agent": "nsmarter",
-        },
-    ).json()
+    global allStations
+    if not allStations:
+        allStations = requests.get(
+            config["allStationsEndpointURL"],
+            headers={
+                "X-Api-Authentication": config["apikey"],
+                "User-Agent": "nsmarter",
+            },
+        ).json()
 
-    for station in resp["stations"]:
+    for station in allStations["stations"]:
         if station["station_id"] == uuid:
             st = dict()
 
@@ -376,6 +380,28 @@ def presetsMenu():
 
     utils.emptyInput()
 
+def fastStationCheckMenu():
+    uuid = questionary.text("Unesite ID stanice:").ask()
+
+    try:
+        with console.status("Pretraga stanica u toku!"):
+            id, station = searchStation(uuid)
+    except TypeError:
+        console.print("[bold red]Tražena stanica nije nađena!")
+        utils.emptyInput()
+        return
+
+    getArrivals(id, station)
+
+    save = questionary.confirm("Da li ipak želite da sačuvate stanicu?", default=False).ask()
+
+    if save:
+        stations[str(id)] = station
+        saveStations()
+        console.print(f"Stanica {station['name']} [green] je sačuvana!")
+
+    utils.emptyInput()
+
 
 def showStatsForStation(id, name):
     st = stats.get(id)
@@ -433,12 +459,11 @@ def statsMenu():
 
     utils.emptyInput()
 
-
 if __name__ == "__main__":
     console.clear()
-    choices = ["Izbor stanica", "Izbor preseta", "Izlaz"]
+    choices = ["Izbor stanica", "Izbor preseta", "Brza provera stanice", "Izlaz"]
     if config["useStats"] and not config["useTermux"]:
-        choices.insert(2, "Pregled statistike")
+        choices.insert(3, "Pregled statistike")
 
     while 1 < 2:
         console.rule("NSmarter")
@@ -451,6 +476,10 @@ if __name__ == "__main__":
 
         elif choice == "Izbor preseta":
             presetsMenu()
+            console.clear()
+
+        elif choice == "Brza provera stanice":
+            fastStationCheckMenu()
             console.clear()
 
         elif choice == "Pregled statistike":

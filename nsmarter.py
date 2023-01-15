@@ -4,6 +4,7 @@ from rich.console import Console
 console = Console()
 
 from modules import data, utils, stations, presets, stats, settings, i18n
+
 _ = i18n.getLocale
 
 if __name__ == "__main__":

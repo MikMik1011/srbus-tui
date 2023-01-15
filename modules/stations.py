@@ -50,7 +50,7 @@ def notifyArrival(stId, busID, statDist):
 def getArrivals(id, station=None):
     id = str(id)
     station = station or data.stations[id]
-    console.rule(_("stationHeader").format(station['name'], station['sid']))
+    console.rule(_("stationHeader").format(station["name"], station["sid"]))
 
     try:
         with console.status(_("duringArrivalsCheck")):
@@ -91,13 +91,11 @@ def getArrivals(id, station=None):
             )
         console.print(table)
 
-        wantNotify = questionary.confirm(
-            _("notificationPrompt")
-        ).ask()
+        wantNotify = questionary.confirm(_("notificationPrompt")).ask()
 
         if wantNotify:
             choices = [
-                _("stationsFar").format(i['line'], i['busID'], i['stationDiff'])
+                _("stationsFar").format(i["line"], i["busID"], i["stationDiff"])
                 for i in lines
             ]
             arrToCheck = questionary.checkbox(
@@ -105,7 +103,9 @@ def getArrivals(id, station=None):
             ).ask()
 
             distToNotify = questionary.text(
-                _("chooseDistanceToNotify").format(data.config['stationsDistanceToNotify'])
+                _("chooseDistanceToNotify").format(
+                    data.config["stationsDistanceToNotify"]
+                )
             ).ask()
             if distToNotify:
                 distToNotify = int(distToNotify)
@@ -123,7 +123,6 @@ def getArrivals(id, station=None):
 
     else:
         console.print(_("noArrivals"))
-
 
 
 def findStation():
@@ -173,7 +172,7 @@ def findStation():
 
     else:
         return
-        
+
     return (id, station)
 
 
@@ -192,7 +191,7 @@ def addStation():
 
     data.saveStations()
 
-    console.print(_("stationSavedSucc").format(station['name']))
+    console.print(_("stationSavedSucc").format(station["name"]))
     utils.emptyInput()
 
 
@@ -200,7 +199,8 @@ def stationsMenu():
     console.clear()
     console.rule(_("stationJustHeader"))
     stList = [
-        f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
+        f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})"
+        for i in data.stations
     ] + [
         _("enterNewStation"),
         _("exit"),
@@ -237,6 +237,7 @@ def stationsMenu():
 
     utils.emptyInput()
 
+
 def fastStationCheckMenu():
     try:
         id, station = findStation()
@@ -245,13 +246,11 @@ def fastStationCheckMenu():
 
     getArrivals(id, station)
 
-    save = questionary.confirm(
-        _("fastSavePrompt"), default=False
-    ).ask()
+    save = questionary.confirm(_("fastSavePrompt"), default=False).ask()
 
     if save:
         data.stations[str(id)] = station
         data.saveStations()
-        console.print(_("stationSavedSucc").format(station['name']))
+        console.print(_("stationSavedSucc").format(station["name"]))
 
     utils.emptyInput()

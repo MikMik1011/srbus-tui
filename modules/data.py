@@ -59,11 +59,12 @@ def saveStats():
     with open(statsPath, "w") as f:
         json.dump(stats, f)
 
+
 def readLocaleFile(lang):
     fileName = f"{lang}.json"
     localePath = os.path.join(localesDir, fileName)
 
     assert os.path.exists(dataDir), f"{localePath} doesn't exist!"
-    
+
     with open(localePath) as f:
         return json.load(f)

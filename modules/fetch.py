@@ -3,12 +3,16 @@ import requests
 
 allStations = None
 
+
 def checkStation(id):
     arrivals = []
 
     resp = requests.get(
         f"{data.config['stationEndpointURL']}{id}",
-        headers={"X-Api-Authentication": data.config["apikey"], "User-Agent": "nsmarter"},
+        headers={
+            "X-Api-Authentication": data.config["apikey"],
+            "User-Agent": "nsmarter",
+        },
     ).json()
 
     if resp[0]["just_coordinates"] != "1":
@@ -31,6 +35,7 @@ def checkStation(id):
             )
     arrivals.reverse()
     return arrivals
+
 
 def searchStationByUUID(uuid):
     global allStations

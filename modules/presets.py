@@ -16,7 +16,8 @@ def presetsMenu():
     if choice == _("createNewPreset"):
         name = questionary.text(_("presetNamePrompt")).ask()
         stList = [
-            f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
+            f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})"
+            for i in data.stations
         ]
 
         stNames = questionary.checkbox(_("chooseStation"), choices=stList).ask()

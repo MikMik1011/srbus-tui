@@ -6,6 +6,7 @@ if not data.config["useTermux"]:
 else:
     from termux import Notification as tNotify
 
+
 def sendNotification(text, nid=None):
     if not data.config["useTermux"]:
         notification = Notify()
@@ -40,8 +41,15 @@ def stationDifference(allStations, goalStation, currIndex):
         [str(i["id"]) for i in allStations].index(goalStation) + 1 - int(currIndex)
     )
 
-cirULatUpper = str.maketrans("АБВГДЂЕЖЗИЈКЛМНОПРСТЋУФХЦЧШ", "ABVGDĐEŽZIJKLMNOPRSTĆUFHCČŠ")
-cirULatLower = str.maketrans("абвгдђежзијклмнопрстћуфхцчш", "abvgdđežzijklmnoprstćufhcčš")
+
+cirULatUpper = str.maketrans(
+    "АБВГДЂЕЖЗИЈКЛМНОПРСТЋУФХЦЧШ", "ABVGDĐEŽZIJKLMNOPRSTĆUFHCČŠ"
+)
+cirULatLower = str.maketrans(
+    "абвгдђежзијклмнопрстћуфхцчш", "abvgdđežzijklmnoprstćufhcčš"
+)
+
+
 def cirULat(text):
     text = text.replace("љ", "lj").replace("Љ", "Lj")
     text = text.replace("њ", "nj").replace("Њ", "Nj")

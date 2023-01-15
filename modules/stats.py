@@ -22,6 +22,7 @@ def showStatsForStation(id):
     with console.status(_("openPlt")):
         plt.show()
 
+
 def showStatsTotal():
     allDays = Counter()
 
@@ -37,27 +38,25 @@ def showStatsTotal():
     with console.status(_("openPlt")):
         plt.show()
 
+
 matPlotImported = False
 
-def statsMenu():
 
+def statsMenu():
 
     console.clear()
     console.rule(_("stats"))
 
     statType = questionary.select(
         _("chooseStatsType"),
-        choices=[
-            _("stationSearchesDaily"),
-            _("totalSearchesDaily"),
-            _("exit")
-        ],
+        choices=[_("stationSearchesDaily"), _("totalSearchesDaily"), _("exit")],
     ).ask()
 
     if statType == _("stationSearchesDaily"):
 
         stList = [
-            f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})" for i in data.stations
+            f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})"
+            for i in data.stations
         ] + [
             _("exit"),
         ]

@@ -4,26 +4,39 @@ from __main__ import console
 from . import data, utils
 from .i18n import getLocale as _
 
+
 def settingsMenu():
     options = [
         {
-            "name": _("stationsDistanceToNotify-name").format(data.config['stationsDistanceToNotify']),
+            "name": _("stationsDistanceToNotify-name").format(
+                data.config["stationsDistanceToNotify"]
+            ),
             "value": "stationsDistanceToNotify",
             "subMenuText": _("stationsDistanceToNotify-subMenuText"),
         },
-        {"name": _("useStats-name").format(data.config['useStats']), "value": "useStats"},
-        {"name": _("useTermux-name").format(data.config['useTermux']), "value": "useTermux"},
+        {
+            "name": _("useStats-name").format(data.config["useStats"]),
+            "value": "useStats",
+        },
+        {
+            "name": _("useTermux-name").format(data.config["useTermux"]),
+            "value": "useTermux",
+        },
     ]
 
     if data.config["useTermux"]:
         options += [
             {
-                "name": "Boja LED lampice za notifikaciju (HEX RGB): {0}".format(data.config['termuxNotifyLedClr']),
+                "name": "Boja LED lampice za notifikaciju (HEX RGB): {0}".format(
+                    data.config["termuxNotifyLedClr"]
+                ),
                 "value": "termuxNotifyLedClr",
                 "subMenuText": _("termuxNotifyLedClr-subMenuText"),
             },
             {
-                "name": _("termuxNotifyVibPattern-name").format(data.config['termuxNotifyVibPattern']),
+                "name": _("termuxNotifyVibPattern-name").format(
+                    data.config["termuxNotifyVibPattern"]
+                ),
                 "value": "termuxNotifyVibPattern",
                 "subMenuText": _("termuxNotifyVibPattern-subMenuText"),
             },
@@ -47,6 +60,8 @@ def settingsMenu():
     data.saveConfig()
 
     console.print(
-        _("settingChangedSucc").format([i for i in options if i["value"] == action][0]["name"], newData)
+        _("settingChangedSucc").format(
+            [i for i in options if i["value"] == action][0]["name"], newData
+        )
     )
     utils.emptyInput()

@@ -234,3 +234,22 @@ def stationsMenu():
         return
 
     utils.emptyInput()
+
+def fastStationCheckMenu():
+    try:
+        id, station = findStation()
+    except TypeError:
+        return
+
+    getArrivals(id, station)
+
+    save = questionary.confirm(
+        "Da li ipak želite da sačuvate stanicu?", default=False
+    ).ask()
+
+    if save:
+        data.stations[str(id)] = station
+        data.saveStations()
+        console.print(f"Stanica {station['name']} [green] je sačuvana!")
+
+    utils.emptyInput()

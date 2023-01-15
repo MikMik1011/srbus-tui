@@ -4,6 +4,7 @@ import json
 from datetime import date
 import threading
 from time import sleep
+from collections import Counter
 
 import questionary
 from rich.console import Console
@@ -302,12 +303,15 @@ def stationsMenu():
     ]).ask()
     
     console.clear()
+
     if action == "Proveri dolaske":
         getArrivals(id)
+
     elif action == "Izbriši stanicu":
         del stations[id]
         saveStations()
         console.print(f"[bold green]Stanica {choice} uspešno obrisana!")
+
     else:
         return
 
@@ -373,12 +377,14 @@ def presetsMenu():
     utils.emptyInput()
 
 
-def showStats(id):
+def showStatsForStation(id, name):
     st = stats.get(id)
     if not st:
         console.print("[bold red]Nema podataka o ovoj stanici!")
         return
 
+    plt.title("Broj pretraga stranice po danima")
+    plt.suptitle(f"Stanica: {name}")
     plt.bar(list(st.keys()), list(st.values()))
     plt.xlabel("Datumi")
     plt.ylabel("Broj pretraga")
@@ -389,20 +395,41 @@ def showStats(id):
 def statsMenu():
     console.clear()
     console.rule("Statistika")
-    stList = [
-        f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
-    ] + [
-        "Izlaz",
-    ]
 
-    choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+    statType = questionary.select("Izaberite tip statistike", choices=[
+        "Broj pretraga stranice po danima",
+        "Ukupan broj pretraga po danima",
+    ]).ask()
 
-    if choice == "Izlaz":
-        return
+    if statType == "Broj pretraga stranice po danima":
 
-    id = str(list(stations.keys())[stList.index(choice)])
-    console.clear()
-    showStats(id)
+        stList = [
+            f"{stations[str(i)]['name']} ({stations[str(i)]['sid']})" for i in stations
+        ] + [
+            "Izlaz",
+        ]
+
+        choice = questionary.select("Izaberite stanicu:", choices=stList).ask()
+
+        if choice == "Izlaz":
+            return
+
+        id = str(list(stations.keys())[stList.index(choice)])
+        console.clear()
+        showStatsForStation(id, choice)
+    
+    elif statType == "Ukupan broj pretraga po danima":
+        allDays = Counter()
+        for station in stats:
+            allDays += Counter(stats[station])
+        allDays = dict(allDays)
+
+        plt.title("Ukupan broj pretraga po danima")
+        plt.bar(list(allDays.keys()), list(allDays.values()))
+        plt.xlabel("Datumi")
+        plt.ylabel("Broj pretraga")
+        with console.status("Otvaranje prozora sa grafikonom"):
+            plt.show()
 
     utils.emptyInput()
 

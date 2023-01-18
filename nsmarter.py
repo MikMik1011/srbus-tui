@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
         console.rule("NSmarter")
 
-        choice = questionary.select(_("checkStats"), choices).ask()
+        choice = questionary.select(_("chooseOption"), choices).ask()
 
         if choice == _("chooseStation"):
             stations.stationsMenu()

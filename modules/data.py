@@ -12,12 +12,12 @@ presetsPath = os.path.join(dataDir, "presets.json")
 statsPath = os.path.join(dataDir, "stats.json")
 localesDir = os.path.join(scriptDir, "locales")
 
-with open(configPath) as f:
+with open(configPath, encoding="utf8") as f:
     config = json.load(f)
 
 
 def saveConfig():
-    with open(configPath, "w") as f:
+    with open(configPath, "w", encoding="utf8") as f:
         json.dump(config, f)
 
 
@@ -25,38 +25,38 @@ if not os.path.exists(dataDir):
     os.makedirs(dataDir)
 
 if os.path.exists(stationsPath):
-    with open(stationsPath) as f:
+    with open(stationsPath, encoding="utf8") as f:
         stations = json.load(f)
 else:
     stations = {}
 
 
 def saveStations():
-    with open(stationsPath, "w") as f:
+    with open(stationsPath, "w", encoding="utf8") as f:
         json.dump(stations, f)
 
 
 if os.path.exists(presetsPath):
-    with open(presetsPath) as f:
+    with open(presetsPath, encoding="utf8") as f:
         presets = json.load(f)
 else:
     presets = {}
 
 
 def savePresets():
-    with open(presetsPath, "w") as f:
+    with open(presetsPath, "w", encoding="utf8") as f:
         json.dump(presets, f)
 
 
 if os.path.exists(statsPath):
-    with open(statsPath) as f:
+    with open(statsPath, encoding="utf8") as f:
         stats = json.load(f)
 else:
     stats = {}
 
 
 def saveStats():
-    with open(statsPath, "w") as f:
+    with open(statsPath, "w", encoding="utf8") as f:
         json.dump(stats, f)
 
 
@@ -66,5 +66,5 @@ def readLocaleFile(lang):
 
     assert os.path.exists(dataDir), f"{localePath} doesn't exist!"
 
-    with open(localePath) as f:
+    with open(localePath, encoding="utf8") as f:
         return json.load(f)

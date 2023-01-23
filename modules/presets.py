@@ -26,7 +26,7 @@ def presetsMenu():
 
         data.savePresets()
 
-        console.print(_("chooseStation").format(name))
+        console.print(_("presetSaved").format(name))
         utils.emptyInput()
         return
 

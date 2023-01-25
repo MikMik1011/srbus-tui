@@ -1,12 +1,17 @@
 import questionary
 
 from __main__ import console
-from . import data, utils
+from . import data, utils, i18n
+
 from .i18n import getLocale as _
 
 
 def settingsMenu():
     options = [
+        {
+            "name": _("language-name").format(data.config["locale"]),
+            "value": "locale",
+        },
         {
             "name": _("stationsDistanceToNotify-name").format(
                 data.config["stationsDistanceToNotify"]
@@ -46,6 +51,20 @@ def settingsMenu():
     action = questionary.select(_("chooseAction"), choices=options).ask()
 
     if action == _("exit"):
+        return
+
+    elif action == "locale":
+        lang = questionary.select(
+            _("language-subMenuText"), choices=data.getLocaleFileNames()
+        ).ask()
+
+        i18n.updateLocale(lang)
+        data.config["locale"] = lang
+        data.saveConfig()
+
+        console.print(_("langChangedSucc").format(lang))
+        utils.emptyInput()
+
         return
 
     if type(data.config[action]) is not bool:

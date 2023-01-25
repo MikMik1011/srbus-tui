@@ -59,6 +59,8 @@ def saveStats():
     with open(statsPath, "w", encoding="utf8") as f:
         json.dump(stats, f)
 
+def getLocaleFileNames():
+    return [i.replace(".json", "") for i in os.listdir(localesDir) if i.endswith(".json")]
 
 def readLocaleFile(lang):
     fileName = f"{lang}.json"

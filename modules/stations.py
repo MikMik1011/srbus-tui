@@ -42,7 +42,7 @@ def notifyArrival(stId, busID, statDist):
             sleep(10)
 
     utils.sendNotification(
-        f"Autobus {busID} na liniji {lineNo} je udaljen {dist} stanica!",
+        _("notificationMsg").format(busID, lineNo, dist),
         f"nsmarter-{lineNo}",
     )
 

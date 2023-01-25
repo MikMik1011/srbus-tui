@@ -33,6 +33,7 @@
 	"stationsFar": "[{0}] ({1}) {2} stanica daleko",
 	"chooseArrivalsToTrack": "Izaberite dolaske koje želite da pratite",
 	"chooseDistanceToNotify": "Unesite udaljenost stanica kada želite biti obavešteni (podrazumevano {0}):",
+	"notificationMsg": "Autobus {0} na liniji {1} je udaljen {2} stanica!",
 	"noArrivals": "Nema dolazaka!",
 	"searchMethodPrompt": "Kojom metodom želite pronaći stanicu?",
 	"searchUUID": "Putem UUID-ja",
@@ -59,6 +60,9 @@
 	"stats": "Statistika",
 	"chooseStatsType": "Izaberite tip statistike",
 
+	"language-name": "Jezik: {0}",
+	"language-subMenuText": "Izaberite jezik:",
+	"langChangedSucc": "Uspešno ste promenili jezik u {0}!",
 	"stationsDistanceToNotify-name": "Podrazumevana udaljenost stanica za notifikaciju: {0}",
 	"stationsDistanceToNotify-subMenuText": "Unesite novu podrazumevanu udaljenost stanica za notifikaciju:",
 	"useStats-name": "Upotreba statistike: {0}",

@@ -4,7 +4,6 @@
 	"apikey": "4670f468049bbee2260",
 	"locale": "srpski",
 	"stationsDistanceToNotify": 4,
-	"useStats": false,
 	"useTermux": false,
 	"termuxNotifyLedClr": "2B00FF",
 	"termuxNotifyVibPattern": "100,200,300,400"

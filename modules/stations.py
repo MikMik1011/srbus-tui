@@ -59,20 +59,6 @@ def getArrivals(id, station=None):
         console.print(_("offline"))
         return
 
-    if data.config["useStats"] and not data.config["useTermux"]:
-
-        if not data.stats.get(id):
-            data.stats[id] = {}
-
-        today = date.today().strftime("%Y-%m-%d")
-
-        if not data.stats[id].get(today):
-            data.stats[id][today] = 0
-
-        data.stats[id][today] += 1
-
-        data.saveStats()
-
     if lines:
         table = Table(box=box.ROUNDED, show_lines=True)
         table.add_column(_("line"), justify="center")

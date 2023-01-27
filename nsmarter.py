@@ -3,7 +3,7 @@ from rich.console import Console
 
 console = Console()
 
-from modules import data, utils, stations, presets, stats, settings, i18n
+from modules import data, utils, stations, presets, settings, i18n
 
 _ = i18n.getLocale
 
@@ -21,8 +21,6 @@ if __name__ == "__main__":
             _("settings"),
             _("exit"),
         ]
-        if data.config["useStats"] and not data.config["useTermux"]:
-            choices.insert(3, _("checkStats"))
 
         console.rule("NSmarter")
 
@@ -36,9 +34,6 @@ if __name__ == "__main__":
 
         elif choice == _("quickStationCheck"):
             stations.fastStationCheckMenu()
-
-        elif choice == _("checkStats"):
-            stats.statsMenu()
 
         elif choice == _("settings"):
             settings.settingsMenu()

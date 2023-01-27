@@ -50,16 +50,6 @@
 	"stationDeletedSucc": "[bold green]Stanica {0} uspešno obrisana!",
 	"fastSavePrompt": "Da li ipak želite da sačuvate stanicu?",
 
-	"noStationStats": "[bold red]Nema podataka o ovoj stanici!",
-	"stationSearchesDaily": "Broj pretraga stranice po danima",
-	"dates": "Datumi",
-	"numberOfSearches": "Broj pretraga",
-	"openPlt": "Otvaranje prozora sa grafikonom",
-	"totalSearchesDaily": "Ukupan broj pretraga po danima",
-	"importMpl": "Učitavanje [italic]matplotlib [not italic]biblioteke",
-	"stats": "Statistika",
-	"chooseStatsType": "Izaberite tip statistike",
-
 	"language-name": "Jezik: {0}",
 	"language-subMenuText": "Izaberite jezik:",
 	"langChangedSucc": "Uspešno ste promenili jezik u {0}!",

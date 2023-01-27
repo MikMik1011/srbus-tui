@@ -9,7 +9,6 @@ configPath = os.path.join(scriptDir, "config.json")
 dataDir = os.path.join(scriptDir, "data")
 stationsPath = os.path.join(dataDir, "stations.json")
 presetsPath = os.path.join(dataDir, "presets.json")
-statsPath = os.path.join(dataDir, "stats.json")
 localesDir = os.path.join(scriptDir, "locales")
 
 with open(configPath, encoding="utf8") as f:
@@ -48,19 +47,11 @@ def savePresets():
         json.dump(presets, f)
 
 
-if os.path.exists(statsPath):
-    with open(statsPath, encoding="utf8") as f:
-        stats = json.load(f)
-else:
-    stats = {}
-
-
-def saveStats():
-    with open(statsPath, "w", encoding="utf8") as f:
-        json.dump(stats, f)
-
 def getLocaleFileNames():
-    return [i.replace(".json", "") for i in os.listdir(localesDir) if i.endswith(".json")]
+    return [
+        i.replace(".json", "") for i in os.listdir(localesDir) if i.endswith(".json")
+    ]
+
 
 def readLocaleFile(lang):
     fileName = f"{lang}.json"

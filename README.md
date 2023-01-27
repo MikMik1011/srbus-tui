@@ -11,7 +11,6 @@
 - Preseti, tj. grupisanje stanica, tako da možete proveriti dolaske za više stanica istovremeno
 - Slanje notifikacija kada autobus bude na određenom broju stanica od željene stanice
 - Termux integracija pomoću Termux:API
-- Statistika broja provera stanica po danima
 - Lokalizacija
 
 

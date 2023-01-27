@@ -7,7 +7,7 @@
 	"exit": "Exit",
 	"chooseOption": "Choose an option:",
 	"exitMsg": "Thanks for using NSmarter!",
-	
+
 	"presets": "Presets",
 	"createNewPreset": "Create a new preset",
 	"presetNamePrompt": "Enter a preset name:",
@@ -20,7 +20,7 @@
 	"presetDeletedSucc": "[bold green]Preset {0} deleted successfully!",
 	"presetRenamedSucc": "[bold green]Preset {0} successfully renamed to {1}!",
 	"presetEditedSucc": "Preset {0} [green] was edited successfully!",
-	
+
 	"stationHeader": "Station {0} ({1}):",
 	"duringArrivalsCheck": "Arrivals check is in progress!",
 	"offline": "Check your internet connection!",
@@ -49,17 +49,7 @@
 	"deleteStation": "Delete a station",
 	"stationDeletedSucc": "[bold green]Station {0} successfully deleted!",
 	"fastSavePrompt": "Do you still want to save the station?",
-	
-	"noStationStats": "[bold red]No data about this station!",
-	"stationSearchesDaily": "Number of page searches per day",
-	"dates": "Dates",
-	"numberOfSearches": "Number of searches",
-	"openPlt": "Open plot window",
-	"totalSearchesDaily": "Total number of searches per day",
-	"importMpl": "Load [italic]matplotlib [not italic]library",
-	"stats": "Statistics",
-	"chooseStatsType": "Choose statistics type",
-	
+
 	"language-name": "Language: {0}",
 	"language-subMenuText": "Choose a language:",
 	"langChangedSucc": "You have successfully changed the language to {0}!",
@@ -72,6 +62,6 @@
 	"termuxNotifyVibPattern-name": "Notify vibration pattern: {0}",
 	"termuxNotifyVibPattern-subMenuText": "Enter a new vibration pattern. Separate each vibration with a comma. The vibration value is in milliseconds.",
 	"settingChangedSucc": "[bold green]Option {0} successfully changed to {1}!",
-	
+
 	"emptyInput": "\nPress Enter to continue!"
 }

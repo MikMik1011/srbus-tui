@@ -20,10 +20,6 @@ def settingsMenu():
             "subMenuText": _("stationsDistanceToNotify-subMenuText"),
         },
         {
-            "name": _("useStats-name").format(data.config["useStats"]),
-            "value": "useStats",
-        },
-        {
             "name": _("useTermux-name").format(data.config["useTermux"]),
             "value": "useTermux",
         },

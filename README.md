@@ -17,7 +17,9 @@
 ## Instalacija i pokretanje
 
 - `git clone https://github.com/MikMik1011/nsmarter`
-- `pip install -r requirements.txt`
+- `cd nsmarter`
+- `python install.py`
+- Unesite 0 ili 1, u zavisnosti da li skidate skriptu na računar ili Termux
 - `python nsmarter.py`
 
 ## Credits

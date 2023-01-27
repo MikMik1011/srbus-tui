@@ -3,12 +3,16 @@ try:
 except ModuleNotFoundError:
     from pip import main as pipmain
 
+import os
+
+scriptDir = os.path.dirname(os.path.abspath(__file__))
+
+
 def setTermuxConfig():
     print("Uključivanje Termux moda...")
 
     import json
-    import os
-    scriptDir = os.path.dirname(os.path.abspath(__file__))
+
     configPath = os.path.join(scriptDir, "config.json")
 
     with open(configPath, "r", encoding="utf8") as f:
@@ -24,20 +28,24 @@ def setTermuxConfig():
 
 def install_modules(termux=False):
     if termux:
-        pipmain(['install', '-r', 'requirements-termux.txt'])
         setTermuxConfig()
+        reqPath = os.path.join(scriptDir, "requirements-termux.txt")
 
-        return
+    else:
+        reqPath = os.path.join(scriptDir, "requirements.txt")
 
-    pipmain(['install', '-r', 'requirements.txt'])
+    pipmain(["install", "-r", reqPath])
+
 
 print("0) Instalacija na PC-ju")
 print("1) Instalacija na Termuxu")
+
 choice = -1
+
 while choice != 0 and choice != 1:
     try:
         choice = int(input("Izbor: "))
-    except TypeError:
+    except ValueError:
         pass
 
 install_modules(termux=bool(choice))

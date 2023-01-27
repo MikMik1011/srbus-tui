@@ -6,6 +6,7 @@ except ModuleNotFoundError:
 import os
 
 scriptDir = os.path.dirname(os.path.abspath(__file__))
+reqsDir = os.path.join(scriptDir, "requirements")
 
 
 def setTermuxConfig():
@@ -29,10 +30,10 @@ def setTermuxConfig():
 def install_modules(termux=False):
     if termux:
         setTermuxConfig()
-        reqPath = os.path.join(scriptDir, "requirements-termux.txt")
+        reqPath = os.path.join(reqsDir, "requirements-termux.txt")
 
     else:
-        reqPath = os.path.join(scriptDir, "requirements.txt")
+        reqPath = os.path.join(reqsDir, "requirements.txt")
 
     pipmain(["install", "-r", reqPath])
 

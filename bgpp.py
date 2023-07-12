@@ -22,7 +22,7 @@ if __name__ == "__main__":
             _("exit"),
         ]
 
-        console.rule("NSmarter")
+        console.rule("BG++")
 
         choice = questionary.select(_("chooseOption"), choices).ask()
 

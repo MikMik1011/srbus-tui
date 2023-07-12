@@ -11,7 +11,7 @@ def checkStation(id):
         f"{data.config['stationEndpointURL']}{id}",
         headers={
             "X-Api-Authentication": data.config["apikey"],
-            "User-Agent": "nsmarter",
+            "User-Agent": "bg++",
         },
     ).json()
 
@@ -44,7 +44,7 @@ def searchStationByUUID(uuid):
             data.config["allStationsEndpointURL"],
             headers={
                 "X-Api-Authentication": data.config["apikey"],
-                "User-Agent": "nsmarter",
+                "User-Agent": "bg++",
             },
         ).json()
 
@@ -69,7 +69,7 @@ def searchStationByName(name):
             data.config["allStationsEndpointURL"],
             headers={
                 "X-Api-Authentication": data.config["apikey"],
-                "User-Agent": "nsmarter",
+                "User-Agent": "bg++",
             },
         ).json()
 

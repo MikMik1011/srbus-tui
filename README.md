@@ -1,6 +1,6 @@
-# NSmarter
+# BG++
 
-### Open-source CLI klijent za proveru dolazaka autobusa u Novom Sadu.
+### Open-source CLI klijent za proveru dolazaka autobusa u Beogradu.
 
 ## Features
 
@@ -18,9 +18,11 @@
 
 - `git clone https://github.com/MikMik1011/nsmarter`
 - `cd nsmarter`
+- `python -m venv venv`
+- Aktivirajte venv u zavisnosti koji shell koristite
 - `python install.py`
 - Unesite 0 ili 1, u zavisnosti da li skidate skriptu na računar ili Termux
-- `python nsmarter.py`
+- `python bgpp.py`
 
 ## Credits
 - <a href="https://github.com/FmasterofU">FmasterofU</a>, za njegovo <a href="https://github.com/FmasterofU/NSmart-RE"> reverse enginnerovanje NSmart API-ja </a> 

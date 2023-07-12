@@ -10,17 +10,17 @@ else:
 def sendNotification(text, nid=None):
     if not data.config["useTermux"]:
         notification = Notify()
-        notification.title = "NSmarter"
+        notification.title = "BG++"
         notification.message = text
         notification.send()
 
     else:
         tNotify.notify(
-            title="NSmarter",
+            title="BG++",
             content=text,
             nid=nid or text,
             kwargs={
-                "group": "nsmarter",
+                "group": "BG++",
                 "led-color": data.config["termuxNotifyLedClr"],
                 "vibrate": data.config["termuxNotifyVibPattern"],
                 "priority": "max",

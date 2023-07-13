@@ -49,7 +49,7 @@ def notifyArrival(stId, busID, statDist):
 
 def getArrivals(id, station=None):
     id = str(id)
-    station = station or data.stations[id]
+    station = station or data.stations[data.config['city']][id]
     console.rule(_("stationHeader").format(station["name"], station["sid"]))
 
     try:
@@ -169,11 +169,11 @@ def addStation():
     except TypeError:
         return
 
-    if data.stations.get(str(id)):
+    if data.stations[data.config['city']].get(str(id)):
         console.print(_("stationAlreadySaved"))
         utils.emptyInput()
         return
-    data.stations[str(id)] = station
+    data.stations[data.config['city']][str(id)] = station
 
     data.saveStations()
 
@@ -184,9 +184,13 @@ def addStation():
 def stationsMenu():
     console.clear()
     console.rule(_("stationJustHeader"))
+
+    if not data.stations.get(data.config['city']):
+        data.stations[data.config['city']] = {}
+        
     stList = [
-        f"{data.stations[str(i)]['name']} ({data.stations[str(i)]['sid']})"
-        for i in data.stations
+        f"{data.stations[data.config['city']][str(i)]['name']} ({data.stations[data.config['city']][str(i)]['sid']})"
+        for i in data.stations[data.config['city']]
     ] + [
         _("enterNewStation"),
         _("exit"),
@@ -201,7 +205,7 @@ def stationsMenu():
     elif choice == _("exit"):
         return
 
-    id = list(data.stations.keys())[stList.index(choice)]
+    id = list(data.stations[data.config['city']].keys())[stList.index(choice)]
 
     action = questionary.select(
         _("chooseAction"),
@@ -214,7 +218,7 @@ def stationsMenu():
         getArrivals(id)
 
     elif action == _("deleteStation"):
-        del data.stations[id]
+        del data.stations[data.config['city']][id]
         data.saveStations()
         console.print(_("stationDeletedSucc").format(choice))
 
@@ -235,7 +239,7 @@ def fastStationCheckMenu():
     save = questionary.confirm(_("fastSavePrompt"), default=False).ask()
 
     if save:
-        data.stations[str(id)] = station
+        data.stations[data.config['city']][str(id)] = station
         data.saveStations()
         console.print(_("stationSavedSucc").format(station["name"]))
 

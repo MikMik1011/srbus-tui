@@ -1,10 +1,10 @@
 {
-	"allStationsEndpointURL": "https://online.nsmart.rs/publicapi/v1/networkextended.php?action=get_cities_extended",
-	"stationEndpointURL": "https://online.nsmart.rs/publicapi/v1/announcement/announcement.php?station_uid=",
-	"apikey": "4670f468049bbee2260",
-	"locale": "srpski",
-	"stationsDistanceToNotify": 4,
-	"useTermux": false,
-	"termuxNotifyLedClr": "2B00FF",
-	"termuxNotifyVibPattern": "100,200,300,400"
+  "city": "",
+  "allStationsEndpointRoute": "/publicapi/v1/networkextended.php?action=get_cities_extended",
+  "stationEndpointRoute": "/publicapi/v1/announcement/announcement.php?station_uid=",
+  "locale": "srpski",
+  "stationsDistanceToNotify": 4,
+  "useTermux": false,
+  "termuxNotifyLedClr": "2B00FF",
+  "termuxNotifyVibPattern": "100,200,300,400"
 }

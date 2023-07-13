@@ -11,4 +11,7 @@ def updateLocale(lang):
 
 
 def getLocale(key):
-    return locale[key] or f"Key {key} in {curLang} locale doesn't exist!"
+    if not locale.get(key):
+        return f"Key {key} in {curLang} locale doesn't exist!"
+
+    return locale[key]

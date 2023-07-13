@@ -43,7 +43,7 @@ def notifyArrival(stId, busID, statDist):
 
     utils.sendNotification(
         _("notificationMsg").format(busID, lineNo, dist),
-        f"nsmarter-{lineNo}",
+        f"srbus-{lineNo}",
     )
 
 
@@ -103,7 +103,7 @@ def getArrivals(id, station=None):
                 threading.Thread(
                     target=notifyArrival,
                     args=(id, busID, distToNotify),
-                    name=f"nsmarter-notify:{busID}",
+                    name=f"srbus-notify:{busID}",
                     daemon=True,
                 ).start()
 

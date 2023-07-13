@@ -7,10 +7,8 @@ from modules import data, utils, stations, presets, settings, i18n
 
 _ = i18n.getLocale
 
-if __name__ == "__main__":
+def mainMenu():
     console.clear()
-
-    i18n.updateLocale(data.config["locale"])
 
     while 1 < 2:
 
@@ -22,7 +20,7 @@ if __name__ == "__main__":
             _("exit"),
         ]
 
-        console.rule("NSmarter")
+        console.rule(f"SrBus ({data.config['city']})")
 
         choice = questionary.select(_("chooseOption"), choices).ask()
 
@@ -44,3 +42,12 @@ if __name__ == "__main__":
             exit()
 
         console.clear()
+
+
+if __name__ == "__main__":
+    i18n.updateLocale(data.config["locale"])
+
+    if not data.config["city"] in data.getCities():
+        settings.citySubmenu()
+
+    mainMenu()

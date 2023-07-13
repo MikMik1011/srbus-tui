@@ -1,13 +1,42 @@
 import questionary
 
 from __main__ import console
-from . import data, utils, i18n
+from . import data, utils, i18n, fetch
 
 from .i18n import getLocale as _
 
 
+def citySubmenu():
+    city = questionary.select(
+        _("city-subMenuText"), choices=data.getCities()
+    ).ask()
+
+    data.config["city"] = city
+    data.saveConfig()
+    fetch.updateCity()
+
+    console.print(_("cityChangedSucc").format(city))
+    utils.emptyInput()
+
+def localeSubmenu():
+    lang = questionary.select(
+        _("language-subMenuText"), choices=data.getLocaleFileNames()
+    ).ask()
+
+    i18n.updateLocale(lang)
+    data.config["locale"] = lang
+    data.saveConfig()
+
+    console.print(_("langChangedSucc").format(lang))
+    utils.emptyInput()
+
+
 def settingsMenu():
     options = [
+        {
+            "name": _("city-name").format(data.config["city"]),
+            "value": "city",
+        },
         {
             "name": _("language-name").format(data.config["locale"]),
             "value": "locale",
@@ -49,18 +78,12 @@ def settingsMenu():
     if action == _("exit"):
         return
 
+    elif action == "city":
+        citySubmenu()
+        return
+
     elif action == "locale":
-        lang = questionary.select(
-            _("language-subMenuText"), choices=data.getLocaleFileNames()
-        ).ask()
-
-        i18n.updateLocale(lang)
-        data.config["locale"] = lang
-        data.saveConfig()
-
-        console.print(_("langChangedSucc").format(lang))
-        utils.emptyInput()
-
+        localeSubmenu()
         return
 
     if type(data.config[action]) is not bool:

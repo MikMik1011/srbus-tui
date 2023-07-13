@@ -3,20 +3,42 @@ import requests
 
 allStations = None
 
+if not data.config["city"] in data.getCities():
+    baseUrl = None
+    headers = None
+else:
+    baseUrl = data.apikeys[data.config["city"]]["url"]
+    headers = {
+        "X-Api-Authentication": data.apikeys[data.config["city"]]["key"],
+        "User-Agent": "srbus",
+    }
+
+
+def updateCity():
+    global headers, baseUrl, allStations
+
+    allStations = None
+
+    baseUrl = data.apikeys[data.config["city"]]["url"]
+    headers = {
+        "X-Api-Authentication": data.apikeys[data.config["city"]]["key"],
+        "User-Agent": "srbus",
+    }
+
 
 def checkStation(id):
     arrivals = []
 
+    global headers
+
+    url = baseUrl + data.config["stationEndpointRoute"] + id
+
     resp = requests.get(
-        f"{data.config['stationEndpointURL']}{id}",
-        headers={
-            "X-Api-Authentication": data.config["apikey"],
-            "User-Agent": "nsmarter",
-        },
+        url,
+        headers=headers,
     ).json()
 
     if resp[0]["just_coordinates"] != "1":
-
         for arr in resp:
             diff = utils.stationDifference(
                 arr["all_stations"], id, arr["vehicles"][0]["station_number"]
@@ -37,16 +59,23 @@ def checkStation(id):
     return arrivals
 
 
+def fetchAllStations():
+    global allStations, headers
+
+    if not allStations:
+        url = baseUrl + data.config["allStationsEndpointRoute"]
+        allStations = requests.get(
+            url,
+            headers=headers,
+        ).json()
+
+    return allStations
+
+
 def searchStationByUUID(uuid):
     global allStations
     if not allStations:
-        allStations = requests.get(
-            data.config["allStationsEndpointURL"],
-            headers={
-                "X-Api-Authentication": data.config["apikey"],
-                "User-Agent": "nsmarter",
-            },
-        ).json()
+        allStations = fetchAllStations()
 
     uuid = uuid.lower()
 
@@ -65,13 +94,7 @@ def searchStationByName(name):
     global allStations
 
     if not allStations:
-        allStations = requests.get(
-            data.config["allStationsEndpointURL"],
-            headers={
-                "X-Api-Authentication": data.config["apikey"],
-                "User-Agent": "nsmarter",
-            },
-        ).json()
+        allStations = fetchAllStations()
 
     name = name.lower()
 
@@ -79,7 +102,6 @@ def searchStationByName(name):
 
     for station in allStations["stations"]:
         if name in utils.cirULat(station["name"].lower()):
-
             st = dict()
             st["name"] = station["name"]
             st["coords"] = station["coordinates"]

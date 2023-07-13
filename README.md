@@ -1,11 +1,11 @@
-# NSmarter
+# SrBus
 
-### Open-source CLI klijent za proveru dolazaka autobusa u Novom Sadu.
+### Open-source CLI klijent za proveru dolazaka autobusa u Srbiji (Beograd, Novi Sad, Niš).
 
 ## Features
 
-- Suckless, bez raznih gluposti koje čine zvaničnu aplikaciju sporom
-- Dobijanje informacija o liniji, procenjenom vremenu, broj stanica za koliko je autobus udaljen, ime trenutne stanice i ID autobusa
+- Suckless, bez raznih gluposti koje čine zvanične aplikacije sporima
+- Dobijanje informacija o liniji, procenjenom vremenu, broj stanica za koliko je autobus udaljen, ime trenutne stanice i ID autobusa u preglednoj tabeli
 - Čuvanje omiljenih stanica jednim klikom
 - Mogućnost dodavanja stanica preko ID-ja ili imena stanice
 - Preseti, tj. grupisanje stanica, tako da možete proveriti dolaske za više stanica istovremeno
@@ -16,11 +16,11 @@
 
 ## Instalacija i pokretanje
 
-- `git clone https://github.com/MikMik1011/nsmarter`
-- `cd nsmarter`
+- `git clone https://github.com/MikMik1011/srbus`
+- `cd srbus`
 - `python install.py`
 - Unesite 0 ili 1, u zavisnosti da li skidate skriptu na računar ili Termux
-- `python nsmarter.py`
+- `python srbus.py`
 
 ## Credits
 - <a href="https://github.com/FmasterofU">FmasterofU</a>, za njegovo <a href="https://github.com/FmasterofU/NSmart-RE"> reverse enginnerovanje NSmart API-ja </a> 

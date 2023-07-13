@@ -6,7 +6,7 @@
 	"checkStats": "Pregled statistike",
 	"exit": "Izlaz",
 	"chooseOption": "Izaberite opciju:",
-	"exitMsg": "Hvala što ste koristili NSmarter!",
+	"exitMsg": "Hvala što ste koristili SrBus!",
 
 	"presets": "Preseti",
 	"createNewPreset": "Napravi novi preset",
@@ -50,6 +50,9 @@
 	"stationDeletedSucc": "[bold green]Stanica {0} uspešno obrisana!",
 	"fastSavePrompt": "Da li ipak želite da sačuvate stanicu?",
 
+	"city-name": "Grad: {0}",
+	"city-subMenuText": "Izaberite grad:",
+	"cityChangedSucc": "Uspešno ste promenili grad u {0}!",
 	"language-name": "Jezik: {0}",
 	"language-subMenuText": "Izaberite jezik:",
 	"langChangedSucc": "Uspešno ste promenili jezik u {0}!",

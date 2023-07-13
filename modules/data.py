@@ -5,6 +5,7 @@ from __main__ import __file__
 
 scriptDir = os.path.dirname(os.path.abspath(__file__))
 configPath = os.path.join(scriptDir, "config.json")
+apiKeysPath = os.path.join(scriptDir, "apikeys.json")
 
 dataDir = os.path.join(scriptDir, "data")
 stationsPath = os.path.join(dataDir, "stations.json")
@@ -13,6 +14,12 @@ localesDir = os.path.join(scriptDir, "locales")
 
 with open(configPath, encoding="utf8") as f:
     config = json.load(f)
+
+with open(apiKeysPath, encoding="utf8") as f:
+    apikeys = json.load(f)
+
+def getCities():
+    return list(apikeys.keys())
 
 
 def saveConfig():

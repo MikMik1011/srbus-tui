@@ -6,7 +6,7 @@
 	"checkStats": "Check statistics",
 	"exit": "Exit",
 	"chooseOption": "Choose an option:",
-	"exitMsg": "Thanks for using NSmarter!",
+	"exitMsg": "Thanks for using SrBus!",
 
 	"presets": "Presets",
 	"createNewPreset": "Create a new preset",
@@ -50,6 +50,9 @@
 	"stationDeletedSucc": "[bold green]Station {0} successfully deleted!",
 	"fastSavePrompt": "Do you still want to save the station?",
 
+	"city-name": "City: {0}",
+	"city-subMenuText": "Choose a city:",
+	"cityChangedSucc": "You have successfully changed the city to {0}!",
 	"language-name": "Language: {0}",
 	"language-subMenuText": "Choose a language:",
 	"langChangedSucc": "You have successfully changed the language to {0}!",

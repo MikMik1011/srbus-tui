@@ -37,9 +37,7 @@ def emptyInput():
 
 
 def stationDifference(allStations, goalStation, currIndex):
-    return abs(
-        [str(i["id"]) for i in allStations].index(goalStation) + 1 - int(currIndex)
-    )
+    return [str(i["id"]) for i in allStations].index(goalStation) + 1 - int(currIndex)
 
 
 cirULatUpper = str.maketrans(

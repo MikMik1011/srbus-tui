@@ -56,6 +56,7 @@ def checkStation(id):
                 }
             )
     arrivals.reverse()
+    arrivals.sort(key=lambda x: (x["line"], x["eta"]))
     return arrivals
 
 

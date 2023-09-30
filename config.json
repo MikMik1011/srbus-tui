@@ -1,7 +1,7 @@
 {
   "city": "",
   "allStationsEndpointRoute": "/publicapi/v1/networkextended.php?action=get_cities_extended",
-  "stationEndpointRoute": "/publicapi/v1/announcement/announcement.php?station_uid=",
+  "stationEndpointRoute": "/publicapi/v1/announcement/announcement.php?action=get_announcement_data&station_uid=",
   "locale": "srpski",
   "stationsDistanceToNotify": 4,
   "useTermux": false,

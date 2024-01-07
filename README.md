@@ -1,6 +1,6 @@
 # SrBus
 
-## Napomena: ovaj projekat je arhiviran, naslednik ovog projekta je [bgpp](https://github.com/MikMik1011/bgpp], frontend + backend web aplikacija.
+## Napomena: ovaj projekat je arhiviran, naslednik ovog projekta je [bgpp](https://github.com/MikMik1011/bgpp), frontend + backend web aplikacija.
 
 ### Open-source CLI klijent za proveru dolazaka autobusa u Srbiji (Beograd, Novi Sad, Niš).
 
